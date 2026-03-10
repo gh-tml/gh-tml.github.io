@@ -144,6 +144,40 @@ function initMobileMenu() {
     const mainNav = document.querySelector('.main-nav');
 
     if (mobileMenuToggle && mainNav) {
+        function resetHamburgerIcon() {
+            const bars = mobileMenuToggle.querySelectorAll('.bar');
+            bars.forEach(bar => {
+                bar.style.transform = 'none';
+                bar.style.opacity = '1';
+            });
+        }
+
+        function closeMainNavMenu() {
+            mainNav.classList.remove('active');
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            resetHamburgerIcon();
+        }
+
+        function closePageMobileOverlay() {
+            const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+            if (!mobileNavOverlay || !mobileNavOverlay.classList.contains('active')) return;
+
+            mobileNavOverlay.classList.remove('active');
+            mobileNavOverlay.setAttribute('aria-hidden', 'true');
+
+            const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+            if (mobileNavToggle) {
+                mobileNavToggle.setAttribute('aria-expanded', 'false');
+            }
+
+            if (document && document.body && document.body.style.overflow === 'hidden') {
+                document.body.style.overflow = '';
+            }
+            if (document && document.documentElement && document.documentElement.style.overflow === 'hidden') {
+                document.documentElement.style.overflow = '';
+            }
+        }
+
         // 初始化无障碍属性
         if (!mobileMenuToggle.hasAttribute('aria-expanded')) {
             mobileMenuToggle.setAttribute('aria-expanded', 'false');
@@ -153,13 +187,18 @@ function initMobileMenu() {
         }
 
         mobileMenuToggle.addEventListener('click', function () {
-            mainNav.classList.toggle('active');
-            mobileMenuToggle.setAttribute('aria-expanded', mainNav.classList.contains('active') ? 'true' : 'false');
+            const shouldOpen = !mainNav.classList.contains('active');
+            if (shouldOpen) {
+                closePageMobileOverlay();
+            }
+
+            mainNav.classList.toggle('active', shouldOpen);
+            mobileMenuToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
 
             // 切换汉堡菜单图标
             const bars = mobileMenuToggle.querySelectorAll('.bar');
             bars.forEach((bar, index) => {
-                if (mainNav.classList.contains('active')) {
+                if (shouldOpen) {
                     if (index === 0) bar.style.transform = 'rotate(-45deg) translate(-5px, 6px)';
                     if (index === 1) bar.style.opacity = '0';
                     if (index === 2) bar.style.transform = 'rotate(45deg) translate(-5px, -6px)';
@@ -173,27 +212,28 @@ function initMobileMenu() {
         // 点击页面其他地方关闭菜单（提升用户体验）
         document.addEventListener('click', function (event) {
             if (!mobileMenuToggle.contains(event.target) && !mainNav.contains(event.target)) {
-                mainNav.classList.remove('active');
-                mobileMenuToggle.setAttribute('aria-expanded', 'false');
-
-                // 重置汉堡菜单图标
-                const bars = mobileMenuToggle.querySelectorAll('.bar');
-                bars.forEach(bar => {
-                    bar.style.transform = 'none';
-                    bar.style.opacity = '1';
-                });
+                closeMainNavMenu();
             }
         });
 
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape' && mainNav.classList.contains('active')) {
-                mainNav.classList.remove('active');
-                mobileMenuToggle.setAttribute('aria-expanded', 'false');
-                const bars = mobileMenuToggle.querySelectorAll('.bar');
-                bars.forEach(bar => {
-                    bar.style.transform = 'none';
-                    bar.style.opacity = '1';
-                });
+                closeMainNavMenu();
+            }
+        });
+
+        mainNav.addEventListener('click', function (event) {
+            const target = event.target && typeof event.target.closest === 'function'
+                ? event.target.closest('a')
+                : null;
+            if (target) {
+                closeMainNavMenu();
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (window.innerWidth > 768 && mainNav.classList.contains('active')) {
+                closeMainNavMenu();
             }
         });
     }

@@ -3022,3 +3022,30 @@
 **备注**：
 - 根因是 `renderMarkdownMath(markdownContent)` 先于 `SiteQuiz.renderQuizzes(markdownContent)` 执行，导致 quiz 动态注入后的公式未被 KaTeX 扫描。
 - 本次仅调整 viewer 渲染顺序并补充顺序回归断言，未扩展到 IDE 预览链路。
+
+### 验证记录 [2026-03-10 13:23]：IDE / viewer / 目录移动端兼容执行
+
+**级别**：L3（跨页面 + IDE + 测试）
+
+**命令与结果**：
+- `npm ci`：通过（根依赖安装完成）
+- `npm --prefix site-app ci`：通过（补齐 `site-app` 构建依赖）
+- `npm --prefix tml-ide-app ci`：通过（补齐 `tml-ide-app` 构建依赖）
+- `npm run build`：先失败后通过（初次失败因缺少 `@vitejs/plugin-react` 与 `@replit/codemirror-lang-csharp`；补齐依赖后 `EXIT:0`）
+- `npm run check-generated`：失败（`gallery:check` 与 `build` 阶段通过，最终失败于 `git diff --exit-code`）
+- `node --test site/tooling/scripts/viewer-sidebar-tree-contract.test.js site/tooling/scripts/folder-view-toggle.test.js tml-ide-app/tests/workbench-viewport-layout.test.js tml-ide-app/tests/mobile-lite-guard.test.js`：通过（13 passed, 0 failed）
+
+**备注**：
+- 本轮覆盖 `IDE`、`viewer文章`、`目录` 的移动端兼容实现与回归验证。
+- `check-generated` 失败原因为当前工作树存在本次待评审改动与既有未清洁差异，属于 `git diff --exit-code` 的预期返回，不是构建链路错误。
+- `npm run build` 通过，但仍存在既有 Vite 提示（`JetBrainsMonoNerdFont-Bold.ttf` 运行时解析、chunk 体积告警）。
+
+### 验证记录 [2026-03-10 13:29]：提交前全量回归（补充）
+
+**级别**：提交前回归校验
+
+**命令与结果**：
+- `npm test`：通过（307 passed, 0 failed, 4 skipped）
+
+**备注**：
+- 为通过全量回归，补充兼容 `viewer.html` 中 `updateNavigationButtons` 的旧三参调用与新单参调用，修复“返回文档列表”在嵌套目录时丢失 `?path=` 的回归。

@@ -453,6 +453,7 @@ const state = {
         markdownMetaDrawerOpen: false,
         quickCreateOpen: false,
         shaderPreviewModalOpen: false,
+        mobileLite: false,
         paletteOpen: false,
         paletteMode: 'commands',
         paletteItems: [],
@@ -471,6 +472,8 @@ const VSCODE_SHORTCUTS = Object.freeze({
     MARKDOWN_META: 'Ctrl+Shift+M',
     FLOWCHART_STUDIO: 'Ctrl+Shift+G'
 });
+const MOBILE_LITE_MAX_WIDTH = 860;
+const MOBILE_LITE_DISABLED_HINT = '手机轻编辑模式下不可用，请使用桌面端。';
 const COMPLETION_MAX_ITEMS = 5000;
 const ANALYZE_COMPLETION_PROFILE_TMOD = 'tmod';
 const ANALYZE_COMPLETION_PROFILE_ANIMATION = 'animation';
@@ -3193,6 +3196,13 @@ function setSubmitPanelRouteState(open, options) {
 
 function openUnifiedSubmitPanel(options) {
     const opts = options || {};
+    if (state.ui.mobileLite) {
+        setSubmitPanelRouteState(false, { syncUrl: opts.syncUrl !== false, replaceUrl: !!opts.replaceUrl });
+        if (!opts.silent) {
+            notifyMobileLiteBlocked('统一提交');
+        }
+        return;
+    }
     setSubmitPanelRouteState(true, { syncUrl: opts.syncUrl !== false, replaceUrl: !!opts.replaceUrl });
 }
 
@@ -3913,6 +3923,7 @@ function applyWorkbenchVisibility() {
     if (!dom.appRoot) return;
     dom.appRoot.classList.toggle('is-sidebar-hidden', !state.ui.sidebarVisible);
     dom.appRoot.classList.toggle('is-panel-hidden', !state.ui.panelVisible);
+    dom.appRoot.classList.toggle('is-mobile-lite', !!state.ui.mobileLite);
 
     if (dom.btnToggleBottomPanel) {
         const icon = dom.btnToggleBottomPanel.querySelector('.panel-collapse-icon');
@@ -3923,6 +3934,79 @@ function applyWorkbenchVisibility() {
     }
     if (dom.btnShowBottomPanel) {
         dom.btnShowBottomPanel.hidden = state.ui.panelVisible;
+    }
+}
+
+function isMobileLiteViewport() {
+    return window.innerWidth <= MOBILE_LITE_MAX_WIDTH;
+}
+
+function setMobileLiteControlDisabled(control, disabled, hintText) {
+    if (!control) return;
+    if (control.dataset && !Object.prototype.hasOwnProperty.call(control.dataset, 'mobileLiteTitle')) {
+        control.dataset.mobileLiteTitle = String(control.getAttribute('title') || '');
+    }
+
+    control.disabled = !!disabled;
+    control.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+
+    if (disabled) {
+        control.setAttribute('title', String(hintText || MOBILE_LITE_DISABLED_HINT));
+        return;
+    }
+
+    const previousTitle = control.dataset && Object.prototype.hasOwnProperty.call(control.dataset, 'mobileLiteTitle')
+        ? control.dataset.mobileLiteTitle
+        : '';
+    if (previousTitle) {
+        control.setAttribute('title', previousTitle);
+    } else {
+        control.removeAttribute('title');
+    }
+}
+
+function applyMobileLiteControlAvailability() {
+    const disabled = !!state.ui.mobileLite;
+    setMobileLiteControlDisabled(dom.btnOpenUnifiedSubmit, disabled, MOBILE_LITE_DISABLED_HINT);
+    setMobileLiteControlDisabled(dom.btnRouteSubmitPanel, disabled, MOBILE_LITE_DISABLED_HINT);
+    setMobileLiteControlDisabled(dom.btnMdFlowchart, disabled, MOBILE_LITE_DISABLED_HINT);
+    setMobileLiteControlDisabled(dom.btnShaderPreviewPopup, disabled, MOBILE_LITE_DISABLED_HINT);
+}
+
+function notifyMobileLiteBlocked(featureName) {
+    const safeFeatureName = String(featureName || '该功能');
+    addEvent('info', `${safeFeatureName}在手机轻编辑模式下不可用，请使用桌面端。`);
+    setStatus(`${safeFeatureName}在手机轻编辑模式下不可用`);
+}
+
+function applyMobileLiteMode(options) {
+    const opts = options && typeof options === 'object' ? options : {};
+    const nextMobileLite = isMobileLiteViewport();
+    const changed = state.ui.mobileLite !== nextMobileLite;
+    state.ui.mobileLite = nextMobileLite;
+    applyWorkbenchVisibility();
+    applyMobileLiteControlAvailability();
+
+    if (!changed) return;
+
+    if (nextMobileLite) {
+        if (state.ui.shaderPreviewModalOpen) {
+            setShaderPreviewModalOpen(false, { focusEditor: false, focus: false, silent: true });
+        }
+        if (state.flowchartDrawer.open) {
+            setFlowchartModalOpen(false, { focusEditor: false, silent: true });
+        }
+        closeUnifiedSubmitPanel({ syncUrl: false, replaceUrl: true });
+        if (opts.notice !== false) {
+            addEvent('info', '已切换手机轻编辑模式：统一提交、流程图工作台和渲染预览已停用。');
+            setStatus('手机轻编辑模式已启用');
+        }
+        return;
+    }
+
+    if (opts.notice !== false) {
+        addEvent('info', '已恢复完整模式。');
+        setStatus('完整模式已启用');
     }
 }
 
@@ -5225,10 +5309,17 @@ function updateHeaderModeActions() {
         dom.btnShaderPreviewPopup.textContent = state.ui.shaderPreviewModalOpen ? '关闭预览' : '渲染预览';
     }
     if (dom.btnShaderExport) dom.btnShaderExport.hidden = !isShader;
+    applyMobileLiteControlAvailability();
 }
 
 function setShaderPreviewModalOpen(open, options) {
     const opts = options || {};
+    if (open && state.ui.mobileLite) {
+        if (!opts.silent) {
+            notifyMobileLiteBlocked('Shader 渲染预览');
+        }
+        return;
+    }
     const allowOpen = activeFileMode() === 'shaderfx';
     const shouldOpen = !!open && allowOpen;
     if (!shouldOpen) {
@@ -7196,6 +7287,12 @@ function setFlowchartModalOpen(open, options) {
     if (!dom.flowchartModal) return false;
     const opts = options && typeof options === 'object' ? options : {};
     const nextOpen = !!open;
+    if (nextOpen && state.ui.mobileLite) {
+        if (!opts.silent) {
+            notifyMobileLiteBlocked('流程图工作台');
+        }
+        return false;
+    }
     if (nextOpen) {
         const markdownCtx = getActiveMarkdownContext();
         if (!markdownCtx) {
@@ -11781,7 +11878,7 @@ function bindUiEvents() {
             })
             .catch(() => {});
         if (routePanelIsOpen()) {
-            openUnifiedSubmitPanel({ syncUrl: false, replaceUrl: true });
+            openUnifiedSubmitPanel({ syncUrl: false, replaceUrl: true, silent: true });
         } else {
             closeUnifiedSubmitPanel({ syncUrl: false, replaceUrl: true });
         }
@@ -12681,6 +12778,7 @@ function bindUiEvents() {
     }
 
     window.addEventListener('resize', () => {
+        applyMobileLiteMode({ notice: false });
         if (activeFileMode() === 'shaderfx' && state.ui.shaderPreviewModalOpen) {
             applyShaderPreviewViewportWidth({ redraw: false, status: false });
             drawShaderPreviewCanvas();
@@ -13268,8 +13366,9 @@ async function bootstrap() {
         persist: true,
         collect: true
     });
+    applyMobileLiteMode({ notice: false });
     if (routePanelIsOpen()) {
-        openUnifiedSubmitPanel({ syncUrl: true, replaceUrl: true });
+        openUnifiedSubmitPanel({ syncUrl: true, replaceUrl: true, silent: true });
     } else {
         closeUnifiedSubmitPanel({ syncUrl: true, replaceUrl: true });
     }

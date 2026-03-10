@@ -88,6 +88,28 @@
             line-height: 1.45;
         }
 
+        .folder-sidebar-toggle {
+            margin-top: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 32px;
+            border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent);
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--bg-color) 88%, transparent);
+            color: var(--text-color);
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .folder-sidebar-toggle:hover,
+        .folder-sidebar-toggle:focus-visible {
+            border-color: color-mix(in srgb, var(--primary-color) 62%, transparent);
+            color: var(--primary-color);
+        }
+
         .folder-folder-tree {
             padding: 10px;
             overflow: auto;
@@ -599,7 +621,25 @@
             }
 
             .folder-sidebar {
+                order: 2;
                 max-height: 44vh;
+            }
+
+            .folder-article-panel {
+                order: 1;
+            }
+
+            .folder-sidebar-toggle {
+                display: inline-flex;
+            }
+
+            body.folder-catalog-page.folder-sidebar-collapsed .folder-sidebar {
+                max-height: none;
+            }
+
+            body.folder-catalog-page.folder-sidebar-collapsed .folder-folder-tree,
+            body.folder-catalog-page.folder-sidebar-collapsed .folder-sidebar-note {
+                display: none;
             }
 
             .folder-toolbar-controls {
@@ -696,6 +736,7 @@
                 <div class="folder-sidebar-head">
                     <h2 class="folder-sidebar-title">目录导航</h2>
                     <p class="folder-sidebar-note">目录下文章不会按学习路径分流</p>
+                    <button class="folder-sidebar-toggle" id="folder-sidebar-mobile-toggle" type="button" aria-controls="folder-folder-tree" aria-expanded="true">收起目录</button>
                 </div>
                 <div class="folder-folder-tree" id="folder-folder-tree"></div>
             </aside>
@@ -753,6 +794,7 @@
             var ALLOWED_SORTS = new Set(['order', 'date', 'title']);
             var ARTICLE_PROGRESS_STORAGE_KEY = 'folderArticlePanelProgress:v1';
             var GROUP_COLLAPSE_STORAGE_KEY = 'folderGroupCollapse:v1';
+            var MOBILE_SIDEBAR_COLLAPSE_STORAGE_KEY = 'folderSidebarMobileCollapsed:v1';
             var MAX_ARTICLE_PROGRESS_ENTRIES = 160;
             var MAX_GROUP_COLLAPSE_ENTRIES = 480;
             var groupBodyIdSeed = 0;
@@ -767,6 +809,8 @@
             };
 
             var refs = {
+                sidebar: null,
+                sidebarToggle: null,
                 tree: null,
                 articlePanel: null,
                 list: null,
@@ -1326,6 +1370,53 @@
                 }
             }
 
+            function isMobileSidebarViewport() {
+                return window.innerWidth <= 960;
+            }
+
+            function readMobileSidebarCollapsedStateOrNull() {
+                try {
+                    var value = window.localStorage.getItem(MOBILE_SIDEBAR_COLLAPSE_STORAGE_KEY);
+                    if (value === null) return null;
+                    return value === 'true';
+                } catch (error) {
+                    return null;
+                }
+            }
+
+            function saveMobileSidebarCollapsedState(collapsed) {
+                try {
+                    window.localStorage.setItem(MOBILE_SIDEBAR_COLLAPSE_STORAGE_KEY, collapsed ? 'true' : 'false');
+                } catch (error) {
+                    console.warn('无法保存移动端目录折叠状态:', error);
+                }
+            }
+
+            function updateMobileSidebarToggleUi(collapsed) {
+                if (!refs.sidebarToggle) return;
+                refs.sidebarToggle.textContent = collapsed ? '展开目录' : '收起目录';
+                refs.sidebarToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            }
+
+            function setMobileSidebarCollapsed(collapsed, persist) {
+                var shouldCollapse = !!collapsed && isMobileSidebarViewport();
+                document.body.classList.toggle('folder-sidebar-collapsed', shouldCollapse);
+                updateMobileSidebarToggleUi(shouldCollapse);
+                if (persist) {
+                    saveMobileSidebarCollapsedState(shouldCollapse);
+                }
+            }
+
+            function syncMobileSidebarStateByViewport() {
+                if (!isMobileSidebarViewport()) {
+                    document.body.classList.remove('folder-sidebar-collapsed');
+                    updateMobileSidebarToggleUi(false);
+                    return;
+                }
+                var stored = readMobileSidebarCollapsedStateOrNull();
+                setMobileSidebarCollapsed(stored === null ? true : stored, false);
+            }
+
             function appendTreeGuides(container, ancestorLast, isLast, depth) {
                 if (!container || !depth) return;
                 var ancestor = Array.isArray(ancestorLast) ? ancestorLast : [];
@@ -1361,9 +1452,17 @@
 
                 function applyFolderSelection(pathValue) {
                     var nextPath = normalizePath(pathValue);
-                    if (state.currentPath === nextPath) return;
+                    if (state.currentPath === nextPath) {
+                        if (isMobileSidebarViewport()) {
+                            setMobileSidebarCollapsed(true, true);
+                        }
+                        return;
+                    }
                     state.currentPath = nextPath;
                     renderAll(false);
+                    if (isMobileSidebarViewport()) {
+                        setMobileSidebarCollapsed(true, true);
+                    }
                 }
 
                 function renderTree(parentUl, treeNode, parentPath, depth, ancestorLast) {
@@ -1823,6 +1922,13 @@
             function bindEvents() {
                 var articleProgressTimer = 0;
 
+                if (refs.sidebarToggle) {
+                    refs.sidebarToggle.addEventListener('click', function () {
+                        var nextCollapsed = !document.body.classList.contains('folder-sidebar-collapsed');
+                        setMobileSidebarCollapsed(nextCollapsed, true);
+                    });
+                }
+
                 refs.search.addEventListener('input', function () {
                     state.query = String(refs.search.value || '').trim();
                     renderAll(true);
@@ -1836,6 +1942,10 @@
 
                 window.addEventListener('popstate', function () {
                     applyQueryState(true);
+                });
+
+                window.addEventListener('resize', function () {
+                    syncMobileSidebarStateByViewport();
                 });
 
                 if (refs.list) {
@@ -1858,6 +1968,8 @@
             }
 
             function cacheRefs() {
+                refs.sidebar = document.getElementById('folder-sidebar');
+                refs.sidebarToggle = document.getElementById('folder-sidebar-mobile-toggle');
                 refs.tree = document.getElementById('folder-folder-tree');
                 refs.articlePanel = document.getElementById('folder-article-panel');
                 refs.list = document.getElementById('folder-article-list');
@@ -1877,6 +1989,7 @@
                     state.allDocs = docs.map(normalizeDoc).filter(Boolean);
                     state.tree = buildFolderIndex(state.allDocs);
                     bindEvents();
+                    syncMobileSidebarStateByViewport();
                     applyQueryState(true);
                 }).catch(function (error) {
                     console.error('folder.html 初始化失败:', error);
