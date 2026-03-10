@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "root": "site/content",
-  "generatedAt": "2026-03-09T00:02:13.063Z",
+  "generatedAt": "2026-03-10T05:22:00.914Z",
   "files": [
     {
       "path": "Modder入门/code/firstclass_makefirstweapon.cs",
@@ -132,6 +132,10 @@
       "kind": "markdown"
     },
     {
+      "path": "shader.fx",
+      "kind": "shaderfx"
+    },
+    {
       "path": "如何贡献/ContentProjects解决方案说明.md",
       "kind": "markdown"
     },
@@ -164,6 +168,10 @@
       "kind": "markdown"
     },
     {
+      "path": "怎么贡献/shaders/demo.fx",
+      "kind": "shaderfx"
+    },
+    {
       "path": "方向性指导/DPapyru-AI Agent的使用-在拥有水平后使用Agent提高开发速度.md",
       "kind": "markdown"
     },
@@ -181,6 +189,10 @@
     },
     {
       "path": "方向性指导/DPapyru-掌握编程的逻辑和思想.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "群友进阶内容/休闲篇/MoKou-做一个简单的刀光.md",
       "kind": "markdown"
     },
     {

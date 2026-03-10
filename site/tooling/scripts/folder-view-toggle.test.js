@@ -46,3 +46,20 @@ test('folder page no longer uses svg-only map contracts', () => {
     assert.doesNotMatch(html, /function\s+renderMap\s*\(/);
     assert.doesNotMatch(html, /function\s+drawNode\s*\(/);
 });
+
+test('folder page exposes mobile sidebar toggle and article-first layout', () => {
+    const html = readFolderPageHtml();
+
+    assert.match(html, /id="folder-sidebar-mobile-toggle"/);
+    assert.match(html, /@media\s*\(max-width:\s*960px\)\s*\{[\s\S]*?\.folder-sidebar\s*\{[\s\S]*?order:\s*2;[\s\S]*?\}/);
+    assert.match(html, /@media\s*\(max-width:\s*960px\)\s*\{[\s\S]*?\.folder-article-panel\s*\{[\s\S]*?order:\s*1;[\s\S]*?\}/);
+    assert.match(html, /body\.folder-catalog-page\.folder-sidebar-collapsed[\s\S]*?\.folder-folder-tree/);
+});
+
+test('folder page persists mobile sidebar collapsed state', () => {
+    const html = readFolderPageHtml();
+
+    assert.match(html, /MOBILE_SIDEBAR_COLLAPSE_STORAGE_KEY\s*=\s*'folderSidebarMobileCollapsed:v1'/);
+    assert.match(html, /function\s+setMobileSidebarCollapsed\(/);
+    assert.match(html, /syncMobileSidebarStateByViewport\(\)/);
+});

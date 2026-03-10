@@ -119,7 +119,7 @@
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
-            touch-action: none;
+            touch-action: pan-y;
         }
 
         .viewer-ai-fab-wrap[data-panel-align='left'] {
@@ -128,6 +128,10 @@
 
         .viewer-ai-fab-wrap[data-panel-align='right'] {
             align-items: flex-end;
+        }
+
+        .viewer-ai-fab-wrap.viewer-ai-fab-wrap--dragging {
+            touch-action: none;
         }
 
         .viewer-ai-fab {
@@ -142,7 +146,7 @@
             cursor: pointer;
             transition: var(--transition-fast);
             user-select: none;
-            touch-action: none;
+            touch-action: manipulation;
         }
 
         html[data-theme='dark'] .viewer-ai-fab {
@@ -1103,7 +1107,11 @@
 		                        <div class="tutorial-actions" aria-label="阅读工具">
 		                            <button class="btn btn-small btn-outline" id="focus-mode-toggle" type="button" aria-pressed="false">焦点模式</button>
 		                        </div>
-	                    </div>
+                                <button class="mobile-nav-toggle" id="mobile-nav-toggle" type="button" aria-label="打开文档导航" aria-controls="mobile-nav-overlay" aria-expanded="false">
+                                    <span class="nav-icon" aria-hidden="true">☰</span>
+                                    <span class="nav-text">导航</span>
+                                </button>
+		                    </div>
                     <!-- 文档标题 -->
                     <h1 class="tutorial-title" id="doc-title">文档</h1>
                     <!-- 文档元信息：难度、时间、作者 -->
@@ -7558,8 +7566,8 @@
             breadcrumb.appendChild(currentSpan);
         }
 
-	        // 更新导航按钮
-		        function updateNavigationButtons(currentDocPath) {
+	        // 更新导航按钮（兼容旧三参调用与当前单参调用）
+		        function updateNavigationButtons(prevDocPath, nextDocPath, currentDocPath) {
 	            const navigationContainer = document.querySelector('.tutorial-navigation');
 	            if (!navigationContainer) {
 	                console.warn('找不到导航容器');
@@ -7571,7 +7579,12 @@
 
 	            // 添加返回文档列表按钮
 	            const backToListBtn = document.createElement('a');
-	            const currentFolder = getFolderOfPath(currentDocPath || CURRENT_DOC_PATH);
+	            const activeDocPath = typeof currentDocPath === 'string' && currentDocPath
+	                ? currentDocPath
+	                : (typeof nextDocPath === 'string' && nextDocPath
+	                    ? nextDocPath
+	                    : (typeof prevDocPath === 'string' && prevDocPath ? prevDocPath : CURRENT_DOC_PATH));
+	            const currentFolder = getFolderOfPath(activeDocPath || CURRENT_DOC_PATH);
 	            backToListBtn.href = currentFolder ? `folder.html?path=${encodeURIComponent(currentFolder)}` : 'folder.html';
 	            backToListBtn.className = 'btn btn-outline prev-tutorial';
 		            backToListBtn.textContent = '← 返回文档列表';
@@ -8474,6 +8487,29 @@
 	            let previousBodyOverflow = '';
 	            let previousHtmlOverflow = '';
 
+            function isMobileDevice() {
+                return window.innerWidth <= 768;
+            }
+
+            function isMobileOverlayOpen() {
+                return mobileNavOverlay.classList.contains('active');
+            }
+
+            function closeHeaderMainNavMenu() {
+                const mainNav = document.getElementById('main-nav');
+                const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+                if (!mainNav) return;
+                if (!mainNav.classList.contains('active')) return;
+                mainNav.classList.remove('active');
+                if (!mobileMenuToggle) return;
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                const bars = mobileMenuToggle.querySelectorAll('.bar');
+                bars.forEach((bar) => {
+                    bar.style.transform = 'none';
+                    bar.style.opacity = '1';
+                });
+            }
+
             function getFocusableElements(container) {
                 const selectors = [
                     'a[href]',
@@ -8512,19 +8548,6 @@
                 }
             }
 
-            // 检查是否为移动设备
-            function isMobileDevice() {
-                return window.innerWidth <= 768;
-            }
-
-            // 设置初始显示状态
-            updateMobileNavVisibility();
-
-            // 确保在移动设备上也能正常工作
-            if (isMobileDevice()) {
-                console.log('检测到移动设备，初始化手机端导航');
-            }
-
             // 生成手机端导航内容
             function generateMobileNavContent() {
                 if (!VIEWER_DOC_CONFIG || ALL_DOCS.length === 0) {
@@ -8547,6 +8570,8 @@
 
 	            // 打开手机端导航
 		            function openMobileNav() {
+                        if (!isMobileDevice()) return;
+                        closeHeaderMainNavMenu();
 		                lastFocusedElement = document.activeElement;
 		                previousBodyOverflow = document.body.style.overflow || '';
 		                previousHtmlOverflow = document.documentElement.style.overflow || '';
@@ -8562,24 +8587,39 @@
 		            }
 
 	            // 关闭手机端导航
-	            function closeMobileNav() {
-	                mobileNavOverlay.classList.remove('active');
-	                document.body.style.overflow = previousBodyOverflow; // 恢复滚动
-	                document.documentElement.style.overflow = previousHtmlOverflow;
-	                mobileNavToggle.setAttribute('aria-expanded', 'false');
-	                mobileNavOverlay.setAttribute('aria-hidden', 'true');
-	                document.removeEventListener('keydown', trapFocus, true);
-	                if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
-	                    lastFocusedElement.focus();
-                } else {
-                    mobileNavToggle.focus();
-                }
-            }
+		            function closeMobileNav(options) {
+                        const opts = options && typeof options === 'object' ? options : {};
+                        if (!isMobileOverlayOpen()) {
+                            mobileNavToggle.setAttribute('aria-expanded', 'false');
+                            mobileNavOverlay.setAttribute('aria-hidden', 'true');
+                            document.removeEventListener('keydown', trapFocus, true);
+                            return;
+                        }
+		                mobileNavOverlay.classList.remove('active');
+		                document.body.style.overflow = previousBodyOverflow; // 恢复滚动
+		                document.documentElement.style.overflow = previousHtmlOverflow;
+		                mobileNavToggle.setAttribute('aria-expanded', 'false');
+		                mobileNavOverlay.setAttribute('aria-hidden', 'true');
+		                document.removeEventListener('keydown', trapFocus, true);
+		                if (opts.restoreFocus === false) return;
+		                if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+		                    lastFocusedElement.focus();
+	                } else if (isMobileDevice()) {
+	                    mobileNavToggle.focus();
+	                }
+	            }
 
-            // 绑定事件监听器
-            mobileNavToggle.addEventListener('click', openMobileNav);
-            mobileNavClose.addEventListener('click', closeMobileNav);
-            mobileNavBack.addEventListener('click', closeMobileNav);
+	            // 绑定事件监听器
+	            mobileNavToggle.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    if (isMobileOverlayOpen()) {
+                        closeMobileNav();
+                        return;
+                    }
+                    openMobileNav();
+                });
+	            mobileNavClose.addEventListener('click', closeMobileNav);
+	            mobileNavBack.addEventListener('click', closeMobileNav);
 
             document.addEventListener('keydown', function (event) {
                 if (event.key === 'Escape' && mobileNavOverlay.classList.contains('active')) {
@@ -8600,12 +8640,21 @@
                     mobileNavToggle.style.display = 'flex';
                 } else {
                     mobileNavToggle.style.display = 'none';
-                    closeMobileNav(); // 在非移动设备上关闭导航
+                    closeMobileNav({ restoreFocus: false }); // 在非移动设备上关闭导航
                 }
             }
 
+            function handleRouteOrHashChange() {
+                closeMobileNav({ restoreFocus: false });
+            }
+
+            // 设置初始显示状态
+            updateMobileNavVisibility();
+
             // 监听窗口大小变化
             window.addEventListener('resize', updateMobileNavVisibility);
+            window.addEventListener('popstate', handleRouteOrHashChange);
+            window.addEventListener('hashchange', handleRouteOrHashChange);
         }
 
         function shouldRenderMobileTopicToggle(categoryKey, topicCount) {
@@ -9004,17 +9053,20 @@
                 let originLeft = 0;
                 let originTop = 0;
                 let moved = false;
+                let activePointerType = '';
 
                 function onPointerMove(event) {
                     if (pointerId == null || event.pointerId !== pointerId) return;
 
                     const dx = event.clientX - startX;
                     const dy = event.clientY - startY;
+                    const dragThreshold = activePointerType === 'touch' ? 8 : 3;
 
-                    if (!moved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+                    if (!moved && (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold)) {
                         moved = true;
                         state.fabDragging = true;
                         dom.fab.classList.add('viewer-ai-fab--dragging');
+                        dom.root.classList.add('viewer-ai-fab-wrap--dragging');
                     }
 
                     if (!moved) return;
@@ -9036,8 +9088,10 @@
 
                     pointerId = null;
                     moved = false;
+                    activePointerType = '';
                     state.fabDragging = false;
                     dom.fab.classList.remove('viewer-ai-fab--dragging');
+                    dom.root.classList.remove('viewer-ai-fab-wrap--dragging');
 
                     window.removeEventListener('pointermove', onPointerMove);
                     window.removeEventListener('pointerup', endDrag);
@@ -9049,6 +9103,7 @@
 
                     pointerId = event.pointerId;
                     moved = false;
+                    activePointerType = String(event.pointerType || '');
                     startX = event.clientX;
                     startY = event.clientY;
 

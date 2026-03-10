@@ -495,6 +495,31 @@
           "description": "如何为教程网站贡献文章",
           "files": [
             {
+              "filename": "MoKou-做一个简单的刀光.md",
+              "path": "群友进阶内容/休闲篇/MoKou-做一个简单的刀光.md",
+              "originalPath": "群友进阶内容/休闲篇/MoKou-做一个简单的刀光.md",
+              "folder": "群友进阶内容/休闲篇",
+              "slug": "群友进阶内容/休闲篇/MoKou-做一个简单的刀光",
+              "title": "MoKou 做一个简单的刀光",
+              "author": "MoKou",
+              "category": "群友进阶内容",
+              "topic": "article-contribution",
+              "order": 100,
+              "description": "制作一个简单的刀光",
+              "tags": [],
+              "date": "",
+              "last_updated": "",
+              "reading_time": "4 min",
+              "is_hidden": false,
+              "time": "50分钟",
+              "difficulty": "intermediate",
+              "prefix": [],
+              "min_c": null,
+              "min_t": null,
+              "colors": null,
+              "colorChange": null
+            },
+            {
               "filename": "MoKou-制作类似MC的工作台.md",
               "path": "群友进阶内容/休闲篇/MoKou-制作类似MC的工作台.md",
               "originalPath": "群友进阶内容/休闲篇/MoKou-制作类似MC的工作台.md",
@@ -4058,6 +4083,7 @@
     "MoKou": {
       "name": "MoKou",
       "files": [
+        "MoKou-做一个简单的刀光.md",
         "MoKou-制作类似MC的工作台.md"
       ]
     },
@@ -7745,6 +7771,31 @@
       "colors": {
         "Mad": "#f00"
       },
+      "colorChange": null
+    },
+    {
+      "filename": "MoKou-做一个简单的刀光.md",
+      "path": "群友进阶内容/休闲篇/MoKou-做一个简单的刀光.md",
+      "originalPath": "群友进阶内容/休闲篇/MoKou-做一个简单的刀光.md",
+      "folder": "群友进阶内容/休闲篇",
+      "slug": "群友进阶内容/休闲篇/MoKou-做一个简单的刀光",
+      "title": "MoKou 做一个简单的刀光",
+      "author": "MoKou",
+      "category": "群友进阶内容",
+      "topic": "article-contribution",
+      "order": 100,
+      "description": "制作一个简单的刀光",
+      "tags": [],
+      "date": "",
+      "last_updated": "",
+      "reading_time": "4 min",
+      "is_hidden": false,
+      "time": "50分钟",
+      "difficulty": "intermediate",
+      "prefix": [],
+      "min_c": null,
+      "min_t": null,
+      "colors": null,
       "colorChange": null
     },
     {
