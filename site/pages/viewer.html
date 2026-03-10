@@ -6810,7 +6810,6 @@
                                 installStudioPreviewAnimResolver(markdownContent);
                                 installFxEmbedInteractions(markdownContent);
                                 applyMarkdownCalloutBlocks(markdownContent);
-                                renderMarkdownMath(markdownContent);
 
 		                        // 移除正文内重复的“章节进度”导航（统一使用页脚导航）
 		                        removeDuplicateChapterProgress(markdownContent);
@@ -6818,13 +6817,14 @@
 	                        // 清理历史写法中的“（可引用）”标记，避免在目录/标题中出现
 	                        stripReferenceMarkersInDom(markdownContent);
 
-	                        // 渲染题目组件（quiz）
-	                        if (window.SiteQuiz && typeof window.SiteQuiz.renderQuizzes === 'function') {
-	                            window.SiteQuiz.renderQuizzes(markdownContent);
-	                        }
+		                        // 渲染题目组件（quiz）
+		                        if (window.SiteQuiz && typeof window.SiteQuiz.renderQuizzes === 'function') {
+		                            window.SiteQuiz.renderQuizzes(markdownContent);
+		                        }
+                                renderMarkdownMath(markdownContent);
 
-	                        // 为 Mermaid 测量提供可布局的容器（display:none 会导致尺寸计算错误/文字截断）
-	                        markdownContent.style.display = 'block';
+		                        // 为 Mermaid 测量提供可布局的容器（display:none 会导致尺寸计算错误/文字截断）
+		                        markdownContent.style.display = 'block';
 	                        markdownContent.style.visibility = 'hidden';
 	                        markdownContent.style.pointerEvents = 'none';
 

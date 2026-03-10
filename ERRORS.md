@@ -3010,3 +3010,15 @@
 **备注**：
 - `check-generated` 失败属于当前工作树存在待评审差异的预期结果，不是构建链路错误。
 - 构建仍存在既有 Vite 提示（字体运行时解析、chunk 体积警告），命令成功退出。
+
+### 验证记录 [2026-03-10 13:12]：修复 viewer quiz 数学公式渲染顺序
+
+**级别**：运行时渲染修复（viewer）
+
+**命令与结果**：
+- `node --test site/tooling/scripts/viewer-callout-runtime.test.js`：先失败后通过（新增顺序断言后失败，调整渲染顺序后通过）
+- `node --test site/tooling/scripts/viewer-callout-runtime.test.js site/tooling/scripts/viewer-transclusion-resilience.test.js`：通过（9 tests, 0 failures）
+
+**备注**：
+- 根因是 `renderMarkdownMath(markdownContent)` 先于 `SiteQuiz.renderQuizzes(markdownContent)` 执行，导致 quiz 动态注入后的公式未被 KaTeX 扫描。
+- 本次仅调整 viewer 渲染顺序并补充顺序回归断言，未扩展到 IDE 预览链路。

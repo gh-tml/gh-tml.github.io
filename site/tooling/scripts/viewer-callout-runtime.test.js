@@ -29,6 +29,17 @@ test('viewer contains KaTeX runtime and applies math rendering for markdown outp
     assert.match(viewer, /renderMarkdownMath\(dom\.output\)/);
 });
 
+test('viewer renders quiz blocks before markdown math rendering for page content', () => {
+    const viewer = fs.readFileSync(path.resolve('site/pages/viewer.html'), 'utf8');
+
+    const quizRenderIdx = viewer.indexOf('window.SiteQuiz.renderQuizzes(markdownContent);');
+    const mathRenderIdx = viewer.indexOf('renderMarkdownMath(markdownContent);');
+
+    assert.notEqual(quizRenderIdx, -1, 'missing quiz render call for markdown content');
+    assert.notEqual(mathRenderIdx, -1, 'missing markdown math render call for markdown content');
+    assert.ok(quizRenderIdx < mathRenderIdx, 'quiz render must happen before markdown math render');
+});
+
 test('viewer math normalization preserves code spans and limits block pairing to same parent', () => {
     const viewer = fs.readFileSync(path.resolve('site/pages/viewer.html'), 'utf8');
 
