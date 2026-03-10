@@ -6,7 +6,7 @@ const { resolveCategory, mapToExistingCategory } = require('./lib/category-utils
 const yaml = require('js-yaml');
 const { generateFunTestQuiz } = require('./scripts/generate-fun-test-quiz');
 
-const SITE_BASE_URL = 'https://dpapyru.github.io';
+const SITE_BASE_URL = 'https://gh-tml.github.io';
 const SEARCH_INDEX_PATH = './site/assets/search-index.json';
 const GUIDED_INDEX_PATH = './site/assets/semantic/guided-index.v1.json';
 const BM25_INDEX_PATH = './site/assets/semantic/bm25-index.v1.json';
