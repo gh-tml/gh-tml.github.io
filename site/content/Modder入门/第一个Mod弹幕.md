@@ -76,8 +76,60 @@ colors:
 
 [箭的AI](anim:anims/arrow-easy-ai.anim.ts)
 
+```quiz
+type: choice
+id: quiz-choice-k53nre
+question: |
+  嗨，来做题吧！我们知道了 $ (X_1-X_2,Y_1-Y_2) $ 是用坐标表达的向量加减法。
+  那么，现在我们来算： $ Pos_1=(3,2);Pos_2=(1,2) $ ，求 $ Pos_1到Pos_2的向量 $
+options:
+  - id: A
+    text: $ (4,4) $
+  - id: B
+    text: $ (2,0) $
+  - id: C
+    text: $ (-2,0) $
+answer: C
+explain: |
+  Pos_1到Pos_2的向量是 $ Pos_2 - Pos_1 $
+```
+
 ## 向量合成和分解
 
 [动画2](anim:anims/vector-add-resolution.anim.ts)
 
+这个动画通过点击可以进行交互。
 
+然后你可以从这上面看到向量是怎么变化的（这边有点麻烦，我会细细的说明）
+
+### 分解向量到坐标轴上
+
+我知道这很难，但是你不要急。根据这个动画你也能发现，你只需要和坐标轴做个垂直关系，就能以最简单的方法分解出来了。
+
+当然我们还有不同分解方法，但是大部分时候也不需要，你又不是做物理题，不用受力分析。
+
+这样就会得到 X方向向量 $ vector_x=(x,0) $ 和 Y方向向量 $ vector_y=(0,y) $
+
+### 把方向向量合成为一个向量
+
+我知道这也很难（
+
+有一个法则叫三角形法则，你可以把一个向量的起点移动到另一个向量上！
+
+具体表达：
+
+$$ vector = vector_1 + vector_2 $$
+
+> 具体动画解释请自行搜索喵
+
+> [!TIP] 温馨提示
+>
+> 你要这样玩只有用坐标表达可以，当然，计算机里面表达一个向量绝大多数时候不离开 X方向向量 + Y方向向量，它们刚刚好是一个坐标！ $ (x,y) $
+
+# AI教学
+
+[弹幕第一个AI](cs:./code/firstproj.cs#cs:m:ExMod.Content.Projectiles.FirstProj.AI_1())
+
+上面是可以用在 `AI()` 方法里面的内容，里面调用的一个方法是下面的方法：
+
+[弹幕第一个AI的运动](cs:./code/firstproj.cs#cs:m:ExMod.Content.Projectiles.FirstProj.AI_1_AttackNPC(NPC))

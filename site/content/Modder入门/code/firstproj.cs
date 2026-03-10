@@ -28,4 +28,40 @@ public class FirstProj : ModProjectile
         if(Projectile.velocity.Y < 3) // 注意！泰拉坐标轴的Y轴和平常的平面直角坐标轴是反过来的，上是负数，下是正数！
             Projectile.velocity.Y += 0.1f;
     }
+    public void AI_1()
+    {
+        // 实现弹幕追踪——原始方法
+
+        NPC target = null; // 设置一个target，赋值为null，表示没有任何NPC
+        float maxDis = 1200f; // 设置追踪最远距离，单位：像素
+        foreach(NPC n in Main.npc)
+        {
+            if(n.CanBeChasedBy()) // 可以被追踪的NPC
+            {
+                float dis = Vector2.Distance(n.Center,Projectile.Center); // 计算距离
+                if(dis < maxDis) // 如果这个NPC小于最远距离
+                {
+                    maxDis = dis; // 重设最大距离为当前距离
+                    target = n; // 设置追踪单位
+                }
+            }
+        }
+
+        if(target is null)
+        {
+            // 没有发现NPC的行为
+        }
+        else
+        {
+            // 发现NPC的行为
+            AI_1_AttackNPC(target);
+        }
+    }
+    public void AI_1_AttackNPC(NPC target)
+    {
+        // 追踪NPC的AI
+        Vector2 vel = target.Center - Projectile.Center; // 计算速度
+        vel.Normalize(); // 标准化
+        Projectile.velocity = vel * 16f; // 把计算的速度赋值到弹幕速度上
+    }
 }
