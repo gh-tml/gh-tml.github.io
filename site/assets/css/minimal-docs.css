@@ -29,33 +29,40 @@ html[data-theme="dark"] a:hover {
 }
 
 /* 头部：去阴影，使用分割线 */
-html[data-theme="dark"] .site-header {
+html[data-theme="dark"] .site-header,
+html[data-theme="light"] .site-header {
     box-shadow: none !important;
     border-bottom: 1px solid var(--border-color);
 }
 
-html[data-theme="dark"] .header-content {
+html[data-theme="dark"] .header-content,
+html[data-theme="light"] .header-content {
     padding: 8px 0 !important;
     min-height: var(--header-height, 70px);
 }
 
-html[data-theme="dark"] .logo-image {
+html[data-theme="dark"] .logo-image,
+html[data-theme="light"] .logo-image {
     display: none;
 }
 
-html[data-theme="dark"] .site-title {
+html[data-theme="dark"] .site-title,
+html[data-theme="light"] .site-title {
     font-size: 1.15rem !important;
     font-weight: 600 !important;
 }
 
-html[data-theme="dark"] .nav-link {
+html[data-theme="dark"] .nav-link,
+html[data-theme="light"] .nav-link {
     border-bottom: none !important;
     padding: 0 !important;
     opacity: 0.9;
 }
 
 html[data-theme="dark"] .nav-link:hover,
-html[data-theme="dark"] .nav-link.active {
+html[data-theme="dark"] .nav-link.active,
+html[data-theme="light"] .nav-link:hover,
+html[data-theme="light"] .nav-link.active {
     opacity: 1;
 }
 
@@ -551,36 +558,50 @@ html[data-theme="dark"] .tutorials,
 html[data-theme="dark"] .tutorial-categories,
 html[data-theme="dark"] .latest-updates,
 html[data-theme="dark"] .getting-started-guide,
-html[data-theme="dark"] .contribute {
+html[data-theme="dark"] .contribute,
+html[data-theme="light"] .features,
+html[data-theme="light"] .tutorials,
+html[data-theme="light"] .tutorial-categories,
+html[data-theme="light"] .latest-updates,
+html[data-theme="light"] .getting-started-guide,
+html[data-theme="light"] .contribute {
     padding: 36px 0 !important;
     background-color: var(--bg-color) !important;
 }
 
 /* 首页：更像“书籍入口”，隐藏营销式区块（保留搜索与入口按钮） */
-html[data-theme="dark"] .latest-updates {
+html[data-theme="dark"] .latest-updates,
+html[data-theme="light"] .latest-updates {
     display: none !important;
 }
 
-html[data-theme="dark"] .tutorial-content {
+html[data-theme="dark"] .tutorial-content,
+html[data-theme="light"] .tutorial-content {
     padding: 14px 18px !important;
 }
 
-html[data-theme="dark"] .tutorial-header {
+html[data-theme="dark"] .tutorial-header,
+html[data-theme="light"] .tutorial-header {
     border-bottom-color: var(--border-color) !important;
 }
 
 /* 按钮：移除高光与位移，保持简洁 */
-html[data-theme="dark"] .btn {
+html[data-theme="dark"] .btn,
+html[data-theme="light"] .btn {
     box-shadow: none !important;
 }
 
-html[data-theme="dark"] .btn::before {
+html[data-theme="dark"] .btn::before,
+html[data-theme="light"] .btn::before {
     display: none !important;
 }
 
 html[data-theme="dark"] .btn-primary:hover,
 html[data-theme="dark"] .btn-secondary:hover,
-html[data-theme="dark"] .btn-outline:hover {
+html[data-theme="dark"] .btn-outline:hover,
+html[data-theme="light"] .btn-primary:hover,
+html[data-theme="light"] .btn-secondary:hover,
+html[data-theme="light"] .btn-outline:hover {
     transform: none !important;
     box-shadow: none !important;
 }
@@ -588,7 +609,10 @@ html[data-theme="dark"] .btn-outline:hover {
 /* 英雄区/标题区：去渐变、减少高度，改为文档式横条 */
 html[data-theme="dark"] .hero,
 html[data-theme="dark"] .docs-hero,
-html[data-theme="dark"] .folder-hero {
+html[data-theme="dark"] .folder-hero,
+html[data-theme="light"] .hero,
+html[data-theme="light"] .docs-hero,
+html[data-theme="light"] .folder-hero {
     background: var(--bg-color) !important;
     color: var(--text-color) !important;
     padding: 26px 0 !important;
@@ -596,40 +620,48 @@ html[data-theme="dark"] .folder-hero {
 }
 
 /* 底部：更克制 */
-html[data-theme="dark"] .site-footer {
+html[data-theme="dark"] .site-footer,
+html[data-theme="light"] .site-footer {
     border-top: 1px solid var(--border-color);
 }
 
-html[data-theme="dark"] .footer-content {
+html[data-theme="dark"] .footer-content,
+html[data-theme="light"] .footer-content {
     padding-top: 12px !important;
 }
 
-html[data-theme="dark"] .hero-title {
+html[data-theme="dark"] .hero-title,
+html[data-theme="light"] .hero-title {
     letter-spacing: 0.2px;
 }
 
 /* 首页搜索框：去浮层阴影与上移动画 */
-html[data-theme="dark"] .hero-search {
+html[data-theme="dark"] .hero-search,
+html[data-theme="light"] .hero-search {
     margin-bottom: 16px !important;
 }
 
-html[data-theme="dark"] .hero-search .search-box {
+html[data-theme="dark"] .hero-search .search-box,
+html[data-theme="light"] .hero-search .search-box {
     border-radius: 10px !important;
     box-shadow: none !important;
     border: 1px solid var(--border-color) !important;
 }
 
-html[data-theme="dark"] .hero-search .search-box:hover {
+html[data-theme="dark"] .hero-search .search-box:hover,
+html[data-theme="light"] .hero-search .search-box:hover {
     transform: none !important;
     box-shadow: none !important;
 }
 
-html[data-theme="dark"] .hero-search .search-input {
+html[data-theme="dark"] .hero-search .search-input,
+html[data-theme="light"] .hero-search .search-input {
     padding: 12px 52px 12px 14px !important;
     font-size: 1rem !important;
 }
 
-html[data-theme="dark"] .hero-search .search-button {
+html[data-theme="dark"] .hero-search .search-button,
+html[data-theme="light"] .hero-search .search-button {
     width: 38px !important;
     height: 38px !important;
     right: 8px !important;
@@ -642,7 +674,8 @@ html[data-theme="dark"] .hero-search .search-button {
     }
 }
 
-html[data-theme="dark"] .hero-search .search-button:hover {
+html[data-theme="dark"] .hero-search .search-button:hover,
+html[data-theme="light"] .hero-search .search-button:hover {
     transform: none !important;
 }
 

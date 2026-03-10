@@ -3049,3 +3049,19 @@
 
 **备注**：
 - 为通过全量回归，补充兼容 `viewer.html` 中 `updateNavigationButtons` 的旧三参调用与新单参调用，修复“返回文档列表”在嵌套目录时丢失 `?path=` 的回归。
+
+### 验证记录 [2026-03-10 21:48]：亮色模式对齐暗色/特殊模式（首页布局）
+
+**级别**：样式对齐修复（首页主题一致性）
+
+**命令与结果**：
+- `npm ci`：通过
+- `npm --prefix site-app ci`：通过
+- `npm --prefix tml-ide-app ci`：通过
+- `npm run build`：先失败后通过（初次失败因 `site-app` 缺少 `@vitejs/plugin-react`；补齐子包依赖后通过）
+- `npm run check-generated`：失败（`gallery:check` 与 `build` 阶段通过，最终失败于 `git diff --exit-code`）
+- `python3 -m http.server 4173 --directory /mnt/f/gh-tml.github.io/.worktrees/fix-light-align-dark-layout` + Playwright 截图脚本：通过（产出 `/tmp/home-light-after.png`、`/tmp/home-dark-after.png`、`/tmp/home-special-after.png`）
+
+**备注**：
+- 本次业务改动仅 `site/assets/css/minimal-docs.css`，用于将暗色/特殊模式下的首页紧凑布局规则同步到亮色模式。
+- `check-generated` 失败属于当前仓库基线与生成产物差异导致的 `git diff --exit-code` 返回，不是构建流程中断。
