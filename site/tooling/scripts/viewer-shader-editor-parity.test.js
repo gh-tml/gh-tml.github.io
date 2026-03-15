@@ -14,7 +14,16 @@ test('viewer shader modal includes ide-like preview control blocks', () => {
     assert.match(viewer, /fx-embed-timebox/);
     assert.match(viewer, /fx-embed-stage-head/);
     assert.match(viewer, /fx-embed-zoom-actions/);
-    assert.match(viewer, /fx-embed-aspect-resizer/);
+    assert.match(viewer, /data-fx-embed-resize-dir="n"/);
+    assert.match(viewer, /data-fx-embed-resize-dir="e"/);
+    assert.match(viewer, /data-fx-embed-resize-dir="s"/);
+    assert.match(viewer, /data-fx-embed-resize-dir="w"/);
+    assert.match(viewer, /data-fx-embed-resize-dir="ne"/);
+    assert.match(viewer, /data-fx-embed-resize-dir="nw"/);
+    assert.match(viewer, /data-fx-embed-resize-dir="se"/);
+    assert.match(viewer, /data-fx-embed-resize-dir="sw"/);
+    assert.doesNotMatch(viewer, /fx-embed-aspect-resizer/);
+    assert.doesNotMatch(viewer, /拖动右侧分隔条可调整比例/);
     assert.match(viewer, /fx-embed-upload-name/);
 });
 
@@ -31,25 +40,26 @@ test('viewer shader modal defines preview mode normalizers and iTime operations'
     assert.match(viewer, /resetFxEmbedITimeOffset/);
 });
 
-test('viewer shader modal defines viewport zoom drag and aspect resize interactions', () => {
+test('viewer shader modal defines viewport zoom drag and edge resize interactions', () => {
     const viewer = readViewer();
 
     assert.match(viewer, /installFxEmbedViewportInteractions/);
-    assert.match(viewer, /installFxEmbedAspectResizerInteractions/);
+    assert.match(viewer, /installFxEmbedEdgeResizeInteractions/);
+    assert.match(viewer, /nextFxEmbedViewportSizeFromDrag/);
     assert.match(viewer, /setFxEmbedZoom/);
     assert.match(viewer, /resetFxEmbedView/);
-    assert.match(viewer, /setFxEmbedViewportWidth/);
+    assert.match(viewer, /setFxEmbedViewportSize/);
 });
 
-test('viewer shader modal reapplies viewport width while syncing restored state', () => {
+test('viewer shader modal reapplies viewport size while syncing restored state', () => {
     const viewer = readViewer();
 
     assert.match(
         viewer,
-        /function syncFxEmbedControls\(\)\s*{[\s\S]*?applyFxEmbedViewportWidth\(\{ redraw: false, status: false \}\);[\s\S]*?applyFxEmbedViewTransform\(\);/
+        /function syncFxEmbedControls\(\)\s*{[\s\S]*?applyFxEmbedViewportSize\(\{ redraw: false, status: false \}\);[\s\S]*?applyFxEmbedViewTransform\(\);/
     );
     assert.match(
         viewer,
-        /modal\.viewportWidth[\s\S]*?syncFxEmbedControls\(\);/
+        /modal\.viewportWidth[\s\S]*?modal\.viewportHeight[\s\S]*?syncFxEmbedControls\(\);/
     );
 });

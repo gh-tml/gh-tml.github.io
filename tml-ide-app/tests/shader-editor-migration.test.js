@@ -34,13 +34,25 @@ test('index.html exposes shader template insertion action in compile panel', () 
     assert.match(html, /id="shader-preview-zoom-out"/);
     assert.match(html, /id="shader-preview-zoom-reset"/);
     assert.match(html, /id="shader-preview-zoom-in"/);
+    assert.match(html, /id="shader-preview-export-png"/);
+    assert.match(html, /id="shader-preview-export-gif"/);
     assert.match(html, /id="shader-preview-toggle-run"/);
     assert.match(html, /id="shader-preview-reset-playback"/);
     assert.match(html, /id="shader-preview-itime"/);
     assert.match(html, /id="shader-preview-itime-minus"/);
     assert.match(html, /id="shader-preview-itime-plus"/);
     assert.match(html, /id="shader-preview-itime-reset"/);
+    assert.match(html, /id="shader-preview-resize-handle-n"/);
+    assert.match(html, /id="shader-preview-resize-handle-e"/);
+    assert.match(html, /id="shader-preview-resize-handle-s"/);
+    assert.match(html, /id="shader-preview-resize-handle-w"/);
+    assert.match(html, /id="shader-preview-resize-handle-ne"/);
+    assert.match(html, /id="shader-preview-resize-handle-nw"/);
+    assert.match(html, /id="shader-preview-resize-handle-se"/);
+    assert.match(html, /id="shader-preview-resize-handle-sw"/);
+    assert.doesNotMatch(html, /id="shader-preview-aspect-resizer"/);
     assert.match(html, /拖动平移，滚轮缩放/);
+    assert.doesNotMatch(html, /拖动右侧分隔条可调整比例/);
     assert.doesNotMatch(html, /id="shader-sidepane"/);
     assert.doesNotMatch(html, /id="shader-pip"/);
 });
@@ -82,9 +94,16 @@ test('main.js defines shaderfx language assist and template flow', () => {
     assert.match(source, /function setShaderPreviewZoom/);
     assert.match(source, /function applyShaderPreviewViewTransform/);
     assert.match(source, /function installShaderPreviewViewportInteractions/);
+    assert.match(source, /function installShaderPreviewEdgeResizeInteractions/);
     assert.match(source, /function setShaderPreviewRunning/);
     assert.match(source, /function resetShaderPreviewPlayback/);
     assert.match(source, /function applyShaderPreviewITimeFromInput/);
+    assert.match(source, /function exportShaderPreviewAsPng/);
+    assert.match(source, /function exportShaderPreviewAsGif/);
+    assert.match(source, /workerScript:\s*'\/site\/assets\/js\/vendor\/gif\.worker\.js'/);
+    assert.match(source, /quality:\s*5/);
+    assert.match(source, /dither:\s*'FloydSteinberg-serpentine'/);
+    assert.match(source, /function ensureShaderPreviewGifEncoder/);
     assert.match(source, /function estimateShaderPreviewFps/);
     assert.match(source, /SHADER_PREVIEW_ITIME_MIN/);
     assert.match(source, /SHADER_PREVIEW_ITIME_MAX/);
@@ -110,4 +129,10 @@ test('shader hlsl adapter exports fragment builder for realtime compile', () => 
     assert.match(source, /export function buildFragmentSource/);
     assert.match(source, /#version 300 es/);
     assert.match(source, /detectEntryFunction/);
+});
+
+test('style.css keeps edge handles visible without viewport-wide hover border artifacts', () => {
+    const css = fs.readFileSync(path.join(root, 'src/style.css'), 'utf8');
+    assert.match(css, /\.shader-preview-resize-handle:hover::before/);
+    assert.doesNotMatch(css, /\.shader-preview-viewport:hover \.shader-preview-resize-handle::before/);
 });

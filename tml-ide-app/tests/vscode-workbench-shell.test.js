@@ -27,6 +27,10 @@ test('index.html exposes workbench contracts for activity, panel tabs and comman
     assert.match(html, /id="shader-preview-viewport"/);
     assert.match(html, /id="shader-preview-controls"/);
     assert.match(html, /id="shader-preview-zoom-reset"/);
+    assert.match(html, /id="shader-preview-export-png"/);
+    assert.match(html, /id="shader-preview-export-gif"/);
+    assert.match(html, /id="shader-preview-resize-handle-se"/);
+    assert.doesNotMatch(html, /id="shader-preview-aspect-resizer"/);
     assert.match(html, /id="unified-submit-panel"/);
     assert.match(html, /id="ide-context-menu"/);
     assert.match(html, /id="ide-context-menu-list"/);

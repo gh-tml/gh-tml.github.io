@@ -6,8 +6,8 @@
     <title>tML IDE Playground</title>
     <meta name="description" content="独立 tModLoader C# IDE Playground，支持补全、悬停文档与双层诊断。">
     <link rel="icon" type="image/png" href="/site/assets/imgs/Green_tModLoader.png">
-  <script type="module" crossorigin src="/tml-ide/assets/index-CeDPSadU.js"></script>
-  <link rel="stylesheet" crossorigin href="/tml-ide/assets/index-B3n9lZLb.css">
+  <script type="module" crossorigin src="/tml-ide/assets/index-DsBz3C9I.js"></script>
+  <link rel="stylesheet" crossorigin href="/tml-ide/assets/index-BpZf113g.css">
 </head>
 <body>
     <div id="app" class="app-shell">
@@ -405,25 +405,27 @@
                 </aside>
                 <section class="shader-preview-stage">
                     <header class="shader-preview-stage-head">
-                        <span class="shader-preview-stage-tip">拖动平移，滚轮缩放；拖动右侧分隔条可调整比例</span>
+                        <span class="shader-preview-stage-tip">拖动平移，滚轮缩放；拖动渲染图像边缘或角点可调整比例</span>
                         <div class="shader-preview-zoom-actions" role="group" aria-label="预览缩放">
                             <button id="shader-preview-zoom-out" type="button" aria-label="缩小预览">-</button>
                             <button id="shader-preview-zoom-reset" type="button" aria-label="重置缩放">100%</button>
                             <button id="shader-preview-zoom-in" type="button" aria-label="放大预览">+</button>
+                            <button id="shader-preview-export-png" type="button" aria-label="导出 PNG">导出 PNG</button>
+                            <button id="shader-preview-export-gif" type="button" aria-label="导出 GIF">导出 GIF</button>
                         </div>
                     </header>
                     <div class="shader-preview-stage-shell">
                         <div id="shader-preview-viewport" class="shader-preview-viewport">
                             <canvas id="shader-preview-canvas" class="shader-preview-canvas" width="720" height="420"></canvas>
+                            <button id="shader-preview-resize-handle-n" class="shader-preview-resize-handle" data-resize-dir="n" type="button" aria-label="向上拖动调整高度" title="向上拖动调整高度"></button>
+                            <button id="shader-preview-resize-handle-e" class="shader-preview-resize-handle" data-resize-dir="e" type="button" aria-label="向右拖动调整宽度" title="向右拖动调整宽度"></button>
+                            <button id="shader-preview-resize-handle-s" class="shader-preview-resize-handle" data-resize-dir="s" type="button" aria-label="向下拖动调整高度" title="向下拖动调整高度"></button>
+                            <button id="shader-preview-resize-handle-w" class="shader-preview-resize-handle" data-resize-dir="w" type="button" aria-label="向左拖动调整宽度" title="向左拖动调整宽度"></button>
+                            <button id="shader-preview-resize-handle-ne" class="shader-preview-resize-handle" data-resize-dir="ne" type="button" aria-label="拖动右上角调整宽高" title="拖动右上角调整宽高"></button>
+                            <button id="shader-preview-resize-handle-nw" class="shader-preview-resize-handle" data-resize-dir="nw" type="button" aria-label="拖动左上角调整宽高" title="拖动左上角调整宽高"></button>
+                            <button id="shader-preview-resize-handle-se" class="shader-preview-resize-handle" data-resize-dir="se" type="button" aria-label="拖动右下角调整宽高" title="拖动右下角调整宽高"></button>
+                            <button id="shader-preview-resize-handle-sw" class="shader-preview-resize-handle" data-resize-dir="sw" type="button" aria-label="拖动左下角调整宽高" title="拖动左下角调整宽高"></button>
                         </div>
-                        <div
-                            id="shader-preview-aspect-resizer"
-                            class="shader-preview-aspect-resizer"
-                            role="separator"
-                            tabindex="0"
-                            aria-orientation="vertical"
-                            aria-label="拖动调整画布比例"
-                            title="拖动调整画布比例（双击重置）"></div>
                     </div>
                 </section>
             </div>

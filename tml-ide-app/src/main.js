@@ -119,11 +119,13 @@ const dom = {
     btnShaderPreviewClose: document.getElementById('btn-shader-preview-close'),
     shaderPreviewCanvas: document.getElementById('shader-preview-canvas'),
     shaderPreviewViewport: document.getElementById('shader-preview-viewport'),
-    shaderPreviewAspectResizer: document.getElementById('shader-preview-aspect-resizer'),
     shaderPreviewStatus: document.getElementById('shader-preview-status'),
     shaderPreviewZoomOut: document.getElementById('shader-preview-zoom-out'),
     shaderPreviewZoomReset: document.getElementById('shader-preview-zoom-reset'),
     shaderPreviewZoomIn: document.getElementById('shader-preview-zoom-in'),
+    shaderPreviewExportPng: document.getElementById('shader-preview-export-png'),
+    shaderPreviewExportGif: document.getElementById('shader-preview-export-gif'),
+    shaderPreviewResizeHandles: Array.from(document.querySelectorAll('#shader-preview-viewport .shader-preview-resize-handle[data-resize-dir]')),
     shaderPresetImage: document.getElementById('shader-preset-image'),
     shaderRenderMode: document.getElementById('shader-render-mode'),
     shaderAddressMode: document.getElementById('shader-address-mode'),
@@ -349,10 +351,15 @@ const state = {
         dragStartY: 0,
         dragOriginX: 0,
         dragOriginY: 0,
-        aspectResizePointerId: -1,
-        aspectResizeStartX: 0,
-        aspectResizeStartWidth: 0,
+        resizePointerId: -1,
+        resizeHandleId: '',
+        resizeDirection: '',
+        resizeStartX: 0,
+        resizeStartY: 0,
+        resizeStartWidth: 0,
+        resizeStartHeight: 0,
         viewportWidth: 0,
+        viewportHeight: 0,
         usingMissingWarnedKeys: new Set(),
         usingImageCache: new Map()
     },
@@ -630,6 +637,7 @@ let viewerPagePathCache = '';
 let flowchartRealtimeTimer = 0;
 let flowchartListDragState = null;
 let flowchartStagePointerEventsBound = false;
+let shaderPreviewGifEncoderPromise = null;
 const FILE_NAME_ALLOWED_EXT_RE = /(?:\.anim\.ts|\.cs|\.md|\.fx|\.png|\.jpe?g|\.gif|\.webp|\.svg|\.bmp|\.avif|\.mp4|\.webm|\.mov|\.m4v|\.avi|\.mkv)$/i;
 const SHADER_PREVIEW_BG_MODES = new Set(['transparent', 'black', 'white']);
 const SHADER_PREVIEW_RENDER_MODES = new Set(['alpha', 'additive', 'nonpremultiplied', 'opaque']);
@@ -645,7 +653,11 @@ const SHADER_PREVIEW_MIN_SCALE = 0.2;
 const SHADER_PREVIEW_MAX_SCALE = 8;
 const SHADER_PREVIEW_ZOOM_STEP = 0.2;
 const SHADER_PREVIEW_MIN_VIEWPORT_WIDTH = 220;
+const SHADER_PREVIEW_MIN_VIEWPORT_HEIGHT = 180;
 const SHADER_PREVIEW_ASPECT_RESIZE_STEP = 20;
+const SHADER_PREVIEW_GIF_DEFAULT_SECONDS = 3;
+const SHADER_PREVIEW_GIF_MAX_SECONDS = 10;
+const SHADER_PREVIEW_GIF_FPS = 20;
 const SHADER_PREVIEW_ITIME_MIN = -120;
 const SHADER_PREVIEW_ITIME_MAX = 120;
 const SHADER_VERTEX_SOURCE = [
@@ -5324,7 +5336,7 @@ function setShaderPreviewModalOpen(open, options) {
     const shouldOpen = !!open && allowOpen;
     if (!shouldOpen) {
         stopShaderPreviewDragging();
-        stopShaderPreviewAspectResizing();
+        stopShaderPreviewEdgeResizing();
         applyShaderPreviewViewTransform();
     }
     state.ui.shaderPreviewModalOpen = shouldOpen;
@@ -5345,8 +5357,8 @@ function setShaderPreviewModalOpen(open, options) {
     }
 
     installShaderPreviewViewportInteractions();
-    installShaderPreviewAspectResizerInteractions();
-    applyShaderPreviewViewportWidth({ redraw: false, status: false });
+    installShaderPreviewEdgeResizeInteractions();
+    applyShaderPreviewViewportSize({ redraw: false, status: false });
     syncShaderPreviewControls();
     ensureShaderPreviewLoop();
     drawShaderPreviewCanvas();
@@ -9422,20 +9434,24 @@ function shaderPreviewViewportBounds() {
         return null;
     }
     const shellRect = shell.getBoundingClientRect();
-    if (!shellRect.width) {
+    if (!shellRect.width || !shellRect.height) {
         return null;
     }
-    const handleWidth = dom.shaderPreviewAspectResizer
-        ? Number(dom.shaderPreviewAspectResizer.getBoundingClientRect().width || 0)
-        : 0;
     const maxWidth = Math.max(
         SHADER_PREVIEW_MIN_VIEWPORT_WIDTH,
-        Math.floor(shellRect.width - handleWidth - 1)
+        Math.floor(shellRect.width - 1)
+    );
+    const maxHeight = Math.max(
+        SHADER_PREVIEW_MIN_VIEWPORT_HEIGHT,
+        Math.floor(shellRect.height - 1)
     );
     const minWidth = Math.max(120, Math.min(SHADER_PREVIEW_MIN_VIEWPORT_WIDTH, maxWidth));
+    const minHeight = Math.max(120, Math.min(SHADER_PREVIEW_MIN_VIEWPORT_HEIGHT, maxHeight));
     return {
         minWidth,
-        maxWidth
+        maxWidth,
+        minHeight,
+        maxHeight
     };
 }
 
@@ -9447,17 +9463,29 @@ function clampShaderPreviewViewportWidth(value) {
     return Math.max(bounds.minWidth, Math.min(bounds.maxWidth, Math.round(numeric)));
 }
 
-function applyShaderPreviewViewportWidth(options) {
+function clampShaderPreviewViewportHeight(value) {
+    const bounds = shaderPreviewViewportBounds();
+    if (!bounds) return 0;
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric <= 0) return 0;
+    return Math.max(bounds.minHeight, Math.min(bounds.maxHeight, Math.round(numeric)));
+}
+
+function applyShaderPreviewViewportSize(options) {
     const opts = options || {};
     if (!dom.shaderPreviewViewport) return;
     const safeWidth = clampShaderPreviewViewportWidth(state.shaderPreview.viewportWidth);
+    const safeHeight = clampShaderPreviewViewportHeight(state.shaderPreview.viewportHeight);
     state.shaderPreview.viewportWidth = safeWidth;
-    if (safeWidth > 0) {
+    state.shaderPreview.viewportHeight = safeHeight;
+    if (safeWidth > 0 || safeHeight > 0) {
         dom.shaderPreviewViewport.style.flex = '0 0 auto';
-        dom.shaderPreviewViewport.style.width = `${safeWidth}px`;
+        dom.shaderPreviewViewport.style.width = safeWidth > 0 ? `${safeWidth}px` : '';
+        dom.shaderPreviewViewport.style.height = safeHeight > 0 ? `${safeHeight}px` : '';
     } else {
         dom.shaderPreviewViewport.style.flex = '';
         dom.shaderPreviewViewport.style.width = '';
+        dom.shaderPreviewViewport.style.height = '';
     }
     if (opts.redraw !== false) {
         drawShaderPreviewCanvas();
@@ -9467,13 +9495,14 @@ function applyShaderPreviewViewportWidth(options) {
     }
 }
 
-function setShaderPreviewViewportWidth(value, options) {
-    state.shaderPreview.viewportWidth = value;
-    applyShaderPreviewViewportWidth(options);
+function setShaderPreviewViewportSize(widthValue, heightValue, options) {
+    state.shaderPreview.viewportWidth = widthValue;
+    state.shaderPreview.viewportHeight = heightValue;
+    applyShaderPreviewViewportSize(options);
 }
 
-function resetShaderPreviewViewportWidth(options) {
-    setShaderPreviewViewportWidth(0, options);
+function resetShaderPreviewViewportSize(options) {
+    setShaderPreviewViewportSize(0, 0, options);
 }
 
 function stopShaderPreviewDragging() {
@@ -9494,26 +9523,47 @@ function stopShaderPreviewDragging() {
     state.shaderPreview.dragPointerId = -1;
 }
 
-function stopShaderPreviewAspectResizing() {
-    const handle = dom.shaderPreviewAspectResizer;
+function shaderPreviewResizeCursor(directionValue) {
+    const direction = String(directionValue || '').toLowerCase();
+    if (direction === 'n' || direction === 's') return 'ns-resize';
+    if (direction === 'e' || direction === 'w') return 'ew-resize';
+    if (direction === 'ne' || direction === 'sw') return 'nesw-resize';
+    return 'nwse-resize';
+}
+
+function stopShaderPreviewEdgeResizing() {
+    const activeHandleId = String(state.shaderPreview.resizeHandleId || '');
+    const handle = Array.isArray(dom.shaderPreviewResizeHandles)
+        ? dom.shaderPreviewResizeHandles.find((item) => item && item.id === activeHandleId)
+        : null;
     if (!handle) {
-        state.shaderPreview.aspectResizePointerId = -1;
-        return;
-    }
-    const pointerId = Number.isInteger(state.shaderPreview.aspectResizePointerId)
-        ? state.shaderPreview.aspectResizePointerId
-        : -1;
-    if (pointerId >= 0 && typeof handle.hasPointerCapture === 'function') {
-        if (handle.hasPointerCapture(pointerId)) {
-            try {
-                handle.releasePointerCapture(pointerId);
-            } catch (_) {
-                // ignore capture release errors
+        state.shaderPreview.resizePointerId = -1;
+    } else {
+        const pointerId = Number.isInteger(state.shaderPreview.resizePointerId)
+            ? state.shaderPreview.resizePointerId
+            : -1;
+        if (pointerId >= 0 && typeof handle.hasPointerCapture === 'function') {
+            if (handle.hasPointerCapture(pointerId)) {
+                try {
+                    handle.releasePointerCapture(pointerId);
+                } catch (_) {
+                    // ignore capture release errors
+                }
             }
         }
     }
-    state.shaderPreview.aspectResizePointerId = -1;
-    handle.classList.remove('is-dragging');
+    if (Array.isArray(dom.shaderPreviewResizeHandles)) {
+        dom.shaderPreviewResizeHandles.forEach((item) => {
+            if (item) item.classList.remove('is-active');
+        });
+    }
+    if (dom.shaderPreviewViewport) {
+        dom.shaderPreviewViewport.classList.remove('is-resizing');
+        dom.shaderPreviewViewport.style.removeProperty('--shader-preview-resize-cursor');
+    }
+    state.shaderPreview.resizePointerId = -1;
+    state.shaderPreview.resizeHandleId = '';
+    state.shaderPreview.resizeDirection = '';
 }
 
 function applyShaderPreviewViewTransform() {
@@ -9615,60 +9665,114 @@ function installShaderPreviewViewportInteractions() {
     });
 }
 
-function installShaderPreviewAspectResizerInteractions() {
-    if (!dom.shaderPreviewAspectResizer || dom.shaderPreviewAspectResizer.dataset.interactionsBound === '1') return;
-    dom.shaderPreviewAspectResizer.dataset.interactionsBound = '1';
-
-    const handle = dom.shaderPreviewAspectResizer;
-    handle.addEventListener('pointerdown', (event) => {
-        if (event.button !== 0 || !dom.shaderPreviewViewport) return;
-        const rect = dom.shaderPreviewViewport.getBoundingClientRect();
-        state.shaderPreview.aspectResizePointerId = Number(event.pointerId);
-        state.shaderPreview.aspectResizeStartX = Number(event.clientX);
-        state.shaderPreview.aspectResizeStartWidth = Number(rect.width || 0);
-        if (typeof handle.setPointerCapture === 'function') {
-            try {
-                handle.setPointerCapture(event.pointerId);
-            } catch (_) {
-                // ignore capture failures
-            }
-        }
-        handle.classList.add('is-dragging');
-        event.preventDefault();
-    });
-
-    handle.addEventListener('pointermove', (event) => {
-        if (Number(state.shaderPreview.aspectResizePointerId) !== Number(event.pointerId)) return;
-        const deltaX = Number(event.clientX) - Number(state.shaderPreview.aspectResizeStartX || 0);
-        setShaderPreviewViewportWidth(Number(state.shaderPreview.aspectResizeStartWidth || 0) + deltaX);
-    });
-
-    const stop = () => {
-        stopShaderPreviewAspectResizing();
+function nextShaderPreviewViewportSizeFromDrag(directionValue, startWidth, startHeight, deltaX, deltaY) {
+    const direction = String(directionValue || '').toLowerCase();
+    let nextWidth = Number(startWidth || 0);
+    let nextHeight = Number(startHeight || 0);
+    if (direction.includes('e')) {
+        nextWidth += deltaX;
+    }
+    if (direction.includes('w')) {
+        nextWidth -= deltaX;
+    }
+    if (direction.includes('s')) {
+        nextHeight += deltaY;
+    }
+    if (direction.includes('n')) {
+        nextHeight -= deltaY;
+    }
+    return {
+        width: nextWidth,
+        height: nextHeight
     };
-    handle.addEventListener('pointerup', stop);
-    handle.addEventListener('pointercancel', stop);
-    handle.addEventListener('lostpointercapture', stop);
-    handle.addEventListener('dblclick', () => {
-        resetShaderPreviewViewportWidth();
-    });
-    handle.addEventListener('keydown', (event) => {
-        if (event.key === 'ArrowLeft') {
-            const current = Number(dom.shaderPreviewViewport && dom.shaderPreviewViewport.getBoundingClientRect().width || 0);
-            setShaderPreviewViewportWidth(current - SHADER_PREVIEW_ASPECT_RESIZE_STEP);
+}
+
+function installShaderPreviewEdgeResizeInteractions() {
+    if (!Array.isArray(dom.shaderPreviewResizeHandles) || !dom.shaderPreviewResizeHandles.length) return;
+    dom.shaderPreviewResizeHandles.forEach((handle) => {
+        if (!handle || handle.dataset.interactionsBound === '1') return;
+        handle.dataset.interactionsBound = '1';
+
+        handle.addEventListener('pointerdown', (event) => {
+            if (event.button !== 0 || !dom.shaderPreviewViewport) return;
+            const direction = String(handle.getAttribute('data-resize-dir') || '').toLowerCase();
+            if (!direction) return;
+            stopShaderPreviewEdgeResizing();
+            stopShaderPreviewDragging();
+            const rect = dom.shaderPreviewViewport.getBoundingClientRect();
+            state.shaderPreview.resizePointerId = Number(event.pointerId);
+            state.shaderPreview.resizeHandleId = String(handle.id || '');
+            state.shaderPreview.resizeDirection = direction;
+            state.shaderPreview.resizeStartX = Number(event.clientX);
+            state.shaderPreview.resizeStartY = Number(event.clientY);
+            state.shaderPreview.resizeStartWidth = Number(rect.width || 0);
+            state.shaderPreview.resizeStartHeight = Number(rect.height || 0);
+            if (typeof handle.setPointerCapture === 'function') {
+                try {
+                    handle.setPointerCapture(event.pointerId);
+                } catch (_) {
+                    // ignore capture failures
+                }
+            }
+            if (dom.shaderPreviewViewport) {
+                dom.shaderPreviewViewport.classList.add('is-resizing');
+                dom.shaderPreviewViewport.style.setProperty('--shader-preview-resize-cursor', shaderPreviewResizeCursor(direction));
+            }
+            handle.classList.add('is-active');
             event.preventDefault();
-            return;
-        }
-        if (event.key === 'ArrowRight') {
-            const current = Number(dom.shaderPreviewViewport && dom.shaderPreviewViewport.getBoundingClientRect().width || 0);
-            setShaderPreviewViewportWidth(current + SHADER_PREVIEW_ASPECT_RESIZE_STEP);
+            event.stopPropagation();
+        });
+
+        handle.addEventListener('pointermove', (event) => {
+            if (Number(state.shaderPreview.resizePointerId) !== Number(event.pointerId)) return;
+            const deltaX = Number(event.clientX) - Number(state.shaderPreview.resizeStartX || 0);
+            const deltaY = Number(event.clientY) - Number(state.shaderPreview.resizeStartY || 0);
+            const next = nextShaderPreviewViewportSizeFromDrag(
+                state.shaderPreview.resizeDirection,
+                Number(state.shaderPreview.resizeStartWidth || 0),
+                Number(state.shaderPreview.resizeStartHeight || 0),
+                deltaX,
+                deltaY
+            );
+            setShaderPreviewViewportSize(next.width, next.height);
             event.preventDefault();
-            return;
-        }
-        if (event.key === 'Home' || event.key === 'Enter' || event.key === ' ') {
-            resetShaderPreviewViewportWidth();
+            event.stopPropagation();
+        });
+
+        const stop = () => {
+            stopShaderPreviewEdgeResizing();
+        };
+        handle.addEventListener('pointerup', stop);
+        handle.addEventListener('pointercancel', stop);
+        handle.addEventListener('lostpointercapture', stop);
+        handle.addEventListener('dblclick', () => {
+            resetShaderPreviewViewportSize();
+        });
+        handle.addEventListener('keydown', (event) => {
+            if (!dom.shaderPreviewViewport) return;
+            const rect = dom.shaderPreviewViewport.getBoundingClientRect();
+            let nextWidth = Number(rect.width || 0);
+            let nextHeight = Number(rect.height || 0);
+            let handled = true;
+            if (event.key === 'ArrowLeft') {
+                nextWidth -= SHADER_PREVIEW_ASPECT_RESIZE_STEP;
+            } else if (event.key === 'ArrowRight') {
+                nextWidth += SHADER_PREVIEW_ASPECT_RESIZE_STEP;
+            } else if (event.key === 'ArrowUp') {
+                nextHeight -= SHADER_PREVIEW_ASPECT_RESIZE_STEP;
+            } else if (event.key === 'ArrowDown') {
+                nextHeight += SHADER_PREVIEW_ASPECT_RESIZE_STEP;
+            } else if (event.key === 'Home' || event.key === 'Enter' || event.key === ' ') {
+                resetShaderPreviewViewportSize();
+                event.preventDefault();
+                return;
+            } else {
+                handled = false;
+            }
+            if (!handled) return;
+            setShaderPreviewViewportSize(nextWidth, nextHeight);
             event.preventDefault();
-        }
+        });
     });
 }
 
@@ -10417,6 +10521,235 @@ function exportShaderFile() {
     const fileName = String(active.path || 'shader.fx').split('/').pop() || 'shader.fx';
     downloadTextFile(fileName, String(active.content || ''), 'text/plain;charset=utf-8');
     addEvent('info', `已导出 ${fileName}`);
+}
+
+function shaderPreviewExportFileName(extension) {
+    const active = getActiveFile();
+    const sourceName = active ? String(active.path || '').split('/').pop() || '' : '';
+    const baseName = sanitizeShaderSlug(sourceName.replace(/\.fx$/i, '')) || 'shader-preview';
+    const canvas = dom.shaderPreviewCanvas;
+    const width = canvas ? Math.max(1, Number(canvas.width || 0)) : 1;
+    const height = canvas ? Math.max(1, Number(canvas.height || 0)) : 1;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const ext = String(extension || 'png').replace(/^\.+/, '').toLowerCase() || 'png';
+    return `${baseName}_${width}x${height}_${timestamp}.${ext}`;
+}
+
+async function ensureShaderPreviewGifEncoder() {
+    if (typeof window === 'undefined') return null;
+    if (window.GIF && typeof window.GIF === 'function') {
+        return window.GIF;
+    }
+    if (shaderPreviewGifEncoderPromise) {
+        return shaderPreviewGifEncoderPromise;
+    }
+    shaderPreviewGifEncoderPromise = new Promise((resolve, reject) => {
+        const scriptId = 'shader-preview-gif-encoder-script';
+        const resolveIfReady = () => {
+            if (window.GIF && typeof window.GIF === 'function') {
+                resolve(window.GIF);
+                return true;
+            }
+            return false;
+        };
+        if (resolveIfReady()) return;
+        const timeoutId = setTimeout(() => {
+            cleanup();
+            reject(new Error('GIF 编码器加载超时'));
+        }, 8000);
+
+        const onLoad = () => {
+            cleanup();
+            if (resolveIfReady()) return;
+            reject(new Error('GIF 编码器加载成功但未找到 window.GIF'));
+        };
+        const onError = () => {
+            cleanup();
+            reject(new Error('GIF 编码器脚本加载失败'));
+        };
+        const cleanup = () => {
+            clearTimeout(timeoutId);
+            target.removeEventListener('load', onLoad);
+            target.removeEventListener('error', onError);
+        };
+
+        let target = document.getElementById(scriptId);
+        if (!target) {
+            target = document.createElement('script');
+            target.id = scriptId;
+            target.src = '/site/assets/js/vendor/gif.js';
+            target.async = true;
+            document.head.appendChild(target);
+        }
+        target.addEventListener('load', onLoad);
+        target.addEventListener('error', onError);
+    });
+    try {
+        return await shaderPreviewGifEncoderPromise;
+    } catch (error) {
+        shaderPreviewGifEncoderPromise = null;
+        throw error;
+    }
+}
+
+function exportShaderPreviewAsPng() {
+    if (activeFileMode() !== 'shaderfx') return;
+    const canvas = dom.shaderPreviewCanvas;
+    if (!canvas) return;
+    drawShaderPreviewCanvas();
+    const fileName = shaderPreviewExportFileName('png');
+    let dataUrl = '';
+    try {
+        dataUrl = canvas.toDataURL('image/png');
+    } catch (error) {
+        const message = String(error && error.message ? error.message : error || '未知错误');
+        setStatus(`导出 PNG 失败: ${message}`);
+        addEvent('error', `导出 PNG 失败：${message}`);
+        return;
+    }
+    if (!dataUrl) {
+        setStatus('导出 PNG 失败: 预览画布为空');
+        addEvent('error', '导出 PNG 失败：预览画布为空');
+        return;
+    }
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setStatus(`PNG 已导出: ${fileName}`);
+    addEvent('info', `Shader 预览 PNG 已导出：${fileName}`);
+}
+
+async function exportShaderPreviewAsGif() {
+    if (activeFileMode() !== 'shaderfx') return;
+    const canvas = dom.shaderPreviewCanvas;
+    const runtime = ensureShaderPreviewRuntime();
+    if (!canvas || !runtime || !runtime.gl) {
+        setStatus('导出 GIF 失败: 预览尚未就绪');
+        addEvent('error', '导出 GIF 失败：预览尚未就绪');
+        return;
+    }
+
+    let GifEncoder = null;
+    try {
+        GifEncoder = await ensureShaderPreviewGifEncoder();
+    } catch (error) {
+        const message = String(error && error.message ? error.message : error || '未知错误');
+        setStatus(`导出 GIF 失败: ${message}`);
+        addEvent('error', `导出 GIF 失败：${message}`);
+        return;
+    }
+    if (!GifEncoder) {
+        setStatus('导出 GIF 失败: 编码器未加载');
+        addEvent('error', '导出 GIF 失败：编码器未加载');
+        return;
+    }
+
+    const rawDuration = globalThis.prompt(
+        `导出 GIF 时长（秒，1-${SHADER_PREVIEW_GIF_MAX_SECONDS}）`,
+        String(SHADER_PREVIEW_GIF_DEFAULT_SECONDS)
+    );
+    if (rawDuration === null) return;
+
+    const durationNum = Number(rawDuration);
+    const durationSec = Number.isFinite(durationNum)
+        ? Math.max(1, Math.min(SHADER_PREVIEW_GIF_MAX_SECONDS, durationNum))
+        : SHADER_PREVIEW_GIF_DEFAULT_SECONDS;
+    const frameCount = Math.max(2, Math.round(durationSec * SHADER_PREVIEW_GIF_FPS));
+    const delayMs = Math.max(16, Math.round(1000 / SHADER_PREVIEW_GIF_FPS));
+    const timeoutMs = Math.max(30000, Math.round(durationSec * 1000 * 30));
+
+    const oldRunning = !!state.shaderPreview.isRunning;
+    const oldLastMs = Number(runtime.lastMs || shaderPreviewNowMs());
+    const oldElapsed = Number(runtime.elapsedSec || 0);
+    const oldOffset = Number(state.shaderPreview.iTimeOffsetSec || 0);
+    const oldFrame = Number(runtime.frame || 0);
+    const oldFpsSamples = Array.isArray(state.shaderPreview.fpsSamples)
+        ? state.shaderPreview.fpsSamples.slice()
+        : [];
+    const oldFps = state.shaderPreview.fps;
+    const oldBtnText = dom.shaderPreviewExportGif ? String(dom.shaderPreviewExportGif.textContent || '导出 GIF') : '导出 GIF';
+
+    try {
+        state.shaderPreview.isRunning = false;
+        if (dom.shaderPreviewExportGif) {
+            dom.shaderPreviewExportGif.disabled = true;
+            dom.shaderPreviewExportGif.textContent = '导出中...';
+        }
+
+        drawShaderPreviewCanvas();
+        const fileName = shaderPreviewExportFileName('gif');
+        const encoder = new GifEncoder({
+            workers: 2,
+            quality: 5,
+            dither: 'FloydSteinberg-serpentine',
+            width: canvas.width,
+            height: canvas.height,
+            workerScript: '/site/assets/js/vendor/gif.worker.js'
+        });
+
+        let lastProgress = -1;
+        const blobPromise = new Promise((resolve, reject) => {
+            encoder.on('finished', (blob) => resolve(blob));
+            encoder.on('error', (error) => reject(error || new Error('GIF 编码失败')));
+            encoder.on('abort', () => reject(new Error('GIF 导出已中断')));
+            encoder.on('progress', (value) => {
+                const progress = Math.max(0, Math.min(100, Math.round(Number(value || 0) * 100)));
+                if (progress === lastProgress) return;
+                lastProgress = progress;
+                if (progress % 10 === 0 || progress >= 99) {
+                    setStatus(`正在导出 GIF... ${progress}%`);
+                }
+            });
+        });
+
+        for (let i = 0; i < frameCount; i += 1) {
+            const timeSec = (i / frameCount) * durationSec;
+            runtime.elapsedSec = 0;
+            state.shaderPreview.iTimeOffsetSec = timeSec;
+            runtime.lastMs = shaderPreviewNowMs();
+            drawShaderPreviewCanvas();
+            encoder.addFrame(canvas, { copy: true, delay: delayMs });
+        }
+
+        setStatus('正在导出 GIF...');
+        encoder.render();
+        const blob = await Promise.race([
+            blobPromise,
+            new Promise((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error('GIF 导出超时，请降低分辨率或缩短时长'));
+                }, timeoutMs);
+            })
+        ]);
+        if (!blob || (typeof blob.size === 'number' && blob.size <= 0)) {
+            throw new Error('导出的 GIF 为空');
+        }
+
+        downloadBlobFile(fileName, blob);
+        setStatus(`GIF 已导出: ${fileName}`);
+        addEvent('info', `Shader 预览 GIF 已导出：${fileName}`);
+    } catch (error) {
+        console.warn('Shader preview GIF export failed:', error);
+        const message = String(error && error.message ? error.message : error || '未知错误');
+        setStatus(`导出 GIF 失败: ${message}`);
+        addEvent('error', `导出 GIF 失败：${message}`);
+    } finally {
+        runtime.elapsedSec = oldElapsed;
+        state.shaderPreview.iTimeOffsetSec = oldOffset;
+        runtime.lastMs = oldRunning ? shaderPreviewNowMs() : oldLastMs;
+        runtime.frame = oldFrame;
+        state.shaderPreview.fpsSamples = oldFpsSamples;
+        state.shaderPreview.fps = oldFps;
+        state.shaderPreview.isRunning = oldRunning;
+        if (dom.shaderPreviewExportGif) {
+            dom.shaderPreviewExportGif.disabled = false;
+            dom.shaderPreviewExportGif.textContent = oldBtnText;
+        }
+        drawShaderPreviewCanvas();
+    }
 }
 
 function isAnimationCsharpFilePath(pathValue) {
@@ -11620,6 +11953,17 @@ function downloadTextFile(fileName, content, mimeType) {
     URL.revokeObjectURL(url);
 }
 
+function downloadBlobFile(fileName, blob) {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+}
+
 function registerWorkspacePlugins() {
     if (!state.plugins.registry.has('csharp')) {
         state.plugins.registry.register(createCsharpWorkspacePlugin());
@@ -12298,6 +12642,18 @@ function bindUiEvents() {
         });
     }
 
+    if (dom.shaderPreviewExportPng) {
+        dom.shaderPreviewExportPng.addEventListener('click', () => {
+            exportShaderPreviewAsPng();
+        });
+    }
+
+    if (dom.shaderPreviewExportGif) {
+        dom.shaderPreviewExportGif.addEventListener('click', async () => {
+            await exportShaderPreviewAsGif();
+        });
+    }
+
     if (dom.btnMdOpenGuide) {
         dom.btnMdOpenGuide.addEventListener('click', async () => {
             if (!getMarkdownContextForAction('打开教程')) return;
@@ -12780,7 +13136,7 @@ function bindUiEvents() {
     window.addEventListener('resize', () => {
         applyMobileLiteMode({ notice: false });
         if (activeFileMode() === 'shaderfx' && state.ui.shaderPreviewModalOpen) {
-            applyShaderPreviewViewportWidth({ redraw: false, status: false });
+            applyShaderPreviewViewportSize({ redraw: false, status: false });
             drawShaderPreviewCanvas();
             updateShaderPreviewStatus();
         }

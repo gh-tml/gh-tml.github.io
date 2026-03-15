@@ -89,6 +89,8 @@ test('viewer fx embed modal exposes shader preview operation controls', () => {
     assert.match(viewer, /data-fx-embed-itime-input/);
     assert.match(viewer, /data-fx-embed-zoom-in/);
     assert.match(viewer, /data-fx-embed-zoom-out/);
-    assert.match(viewer, /data-fx-embed-aspect-resizer/);
+    assert.match(viewer, /data-fx-embed-resize-dir="se"/);
+    assert.match(viewer, /data-fx-embed-resize-dir="nw"/);
+    assert.doesNotMatch(viewer, /data-fx-embed-aspect-resizer/);
     assert.match(viewer, /setBoundFxEmbedTextureAddressMode/);
 });
