@@ -20,7 +20,8 @@ test('index.html exposes workbench contracts for activity, panel tabs and comman
     assert.match(html, /id="command-palette"/);
     assert.match(html, /id="command-palette-input"/);
     assert.match(html, /id="command-palette-results"/);
-    assert.match(html, /id="markdown-preview-pane"/);
+    assert.match(html, /id="btn-markdown-open-viewer"/);
+    assert.doesNotMatch(html, /id="markdown-preview-pane"/);
     assert.match(html, /id="shader-preview-modal"/);
     assert.match(html, /id="btn-shader-preview-popup"/);
     assert.match(html, /id="shader-preview-canvas"/);

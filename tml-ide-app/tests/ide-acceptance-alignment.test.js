@@ -18,8 +18,8 @@ test('IDE acceptance suite follows quick-create modal workflow and anim.ts smoke
     assert.doesNotMatch(source, /\.animcs/);
 });
 
-test('IDE acceptance suite validates markdown preview via embedded viewer iframe', () => {
-    assert.match(source, /返回编辑/);
+test('IDE acceptance suite validates markdown preview via new-tab viewer', () => {
+    assert.match(source, /#btn-markdown-open-viewer/);
     assert.match(source, /viewer\.html\?[^\n]*studio_preview=1/);
-    assert.match(source, /viewer\.html\?[^\n]*studio_embed=1/);
+    assert.doesNotMatch(source, /viewer\.html\?[^\n]*studio_embed=1/);
 });

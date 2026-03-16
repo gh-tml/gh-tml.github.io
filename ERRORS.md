@@ -3085,3 +3085,115 @@
   - `tmp/automation/20260316-phase1/03-quick-create-backdrop-transparent.png`
 - 快速创建遮罩透明规则通过自动化注入位移（将 `.quick-create-dialog` 移出视口）触发监控逻辑验证，`#quick-create-backdrop` 正确追加 `quick-create-backdrop-transparent`。
 - `check-generated` 的失败属于当前工作树存在待评审改动导致的预期返回，不是构建中断。
+
+### 验证记录 [2026-03-16 10:38]：可视化对齐流程（规范 + 套件 + 评分门禁）
+
+**级别**：L3（流程资产与验收门禁）
+
+**命令与结果**：
+- `node --test tml-ide-app/tests/visual-alignment-flow.test.js tml-ide-app/tests/init-readiness.test.js tml-ide-app/tests/ide-acceptance-alignment.test.js`：通过（10 passed, 0 failed）
+- `node --check tmp-playwright/lib/suites.mjs tmp-playwright/lib/runner.mjs tmp-playwright/tml-ide-vscode-acceptance.mjs tmp-playwright/tml-ide-unified-acceptance.mjs tmp-playwright/shared-viewer-acceptance.mjs tmp-playwright/fullpage-acceptance.mjs tmp-playwright/visual-parity-gate.mjs`：通过
+- `node tmp-playwright/visual-parity-gate.mjs --report /tmp/visual-parity-sample.json --gate /tmp/visual-parity-gate-sample.json`：通过（示例总分 89.4，门禁 PASS）
+- `node tmp-playwright/tml-ide-unified-acceptance.mjs --report /tmp/visual-parity-live.json --output-dir /tmp/visual-parity-screens`：失败（缺少 Playwright 依赖）
+
+**备注**：
+- 本次新增流程资产：`VisualAlignmentSpec v1`、`BlockSupportMatrix v1`、`VisualParityReport v1` 门禁脚本、`tmp-playwright` 套件与运行器。
+- 自动化实跑失败原因为环境未安装 `playwright` 包，错误提示已内置安装命令：`npm i -D playwright`。
+
+### 验证记录 [2026-03-16 11:40]：移除可视化编辑，仅保留新标签预览
+
+**级别**：L3（IDE Markdown 预览链路 + viewer 模式收敛）
+
+**命令与结果**：
+- `node --test tml-ide-app/tests/smoke-contract.test.js tml-ide-app/tests/vscode-workbench-shell.test.js tml-ide-app/tests/markdown-editor-migration.test.js tml-ide-app/tests/ide-acceptance-alignment.test.js`：通过（8 passed, 0 failed）
+- `npm run build`：通过（`BUILD_EXIT=0`）
+
+**备注**：
+- 已移除 `studio_embed`、嵌入式预览桥接、Markdown 可视化/WYSIWYG 相关实现，仅保留 `btn-markdown-open-viewer` 新标签预览路径。
+- 构建阶段存在既有 Vite 提示（字体运行时解析与 chunk 体积警告），不影响本次通过结果。
+- `npm run check-generated` 未执行：当前工作树存在大量既有与生成产物变更，执行该命令会被 `git diff --exit-code` 基线差异拦截，无法作为本次改动有效性判断。
+### 验证记录 [2026-03-16 12:26]：Markdown 元数据全量对齐（主IDE + 共享工具）
+
+**级别**：L3（元数据读写链路 + 回归）
+
+**命令与结果**：
+- `node --test site/tooling/scripts/front-matter-utils.test.js tml-ide-app/tests/markdown-editor-migration.test.js`：通过（6 passed, 0 failed）
+- `node --test site/tooling/scripts/front-matter-utils.test.js tml-ide-app/tests/markdown-editor-migration.test.js tml-ide-app/tests/smoke-contract.test.js tml-ide-app/tests/vscode-workbench-shell.test.js tml-ide-app/tests/ide-acceptance-alignment.test.js`：通过（12 passed, 0 failed）
+- `npm run build`：通过
+
+**备注**：
+- 已验证 `source_cs/date/last_updated/next_chapter/prev_chapter/category` 在解析与合并链路可用，且 `mergeFrontMatter` 保留未知字段（不丢 front matter 扩展键）。
+- 浏览器 MCP 自动化未执行：当前环境 `chrome-local` MCP 服务不可连接（`Failed to connect to MCP server`）。
+### 验证记录 [2026-03-16 12:50]：IDE Markdown 元数据优化（校验反馈 + 选择控件）
+
+**级别**：L3（元数据交互体验 + 校验写回 + 回归）
+
+**命令与结果**：
+- `node --test tml-ide-app/tests/markdown-editor-migration.test.js`：通过（2 passed, 0 failed）
+- `node --test site/tooling/scripts/front-matter-utils.test.js tml-ide-app/tests/markdown-editor-migration.test.js tml-ide-app/tests/smoke-contract.test.js tml-ide-app/tests/vscode-workbench-shell.test.js tml-ide-app/tests/ide-acceptance-alignment.test.js`：通过（12 passed, 0 failed）
+- `npm run build`：通过
+
+**备注**：
+- 元数据面板新增选择式交互：`topic` 选择框、`category` 建议选项、`next_chapter/prev_chapter/source_cs` 路径选择按钮。
+- 元数据写回新增校验与阻断：`date/last_updated` 日期格式、章节与 C# 路径格式、`prefix` 链接格式、`colors/colorChange` 颜色格式；校验失败仅提示并阻止写回。
+- `npm run check-generated` 未执行：当前工作树存在大量既有差异，`git diff --exit-code` 基线不适合作为本次功能有效性判断。
+
+### 验证记录 [2026-03-16 12:58]：quick-create-backdrop 快捷退出遮罩透明化
+
+**级别**：UI 行为修正（快捷退出层）
+
+**命令与结果**：
+- `npm run build`（修改前）：通过
+- `npm run build`（修改后）：通过
+
+**备注**：
+- `#quick-create-backdrop` 已改为完全透明，同时保留点击能力用于快捷退出。
+
+### 验证记录 [2026-03-16 13:12]：Markdown 引用入口合并（移除 animts 代码块）
+
+**级别**：IDE Markdown 工具栏交互收敛
+
+**命令与结果**：
+- `node --test tml-ide-app/tests/markdown-editor-migration.test.js`：通过（2 passed, 0 failed）
+- `node --test site/tooling/scripts/front-matter-utils.test.js tml-ide-app/tests/markdown-editor-migration.test.js tml-ide-app/tests/smoke-contract.test.js tml-ide-app/tests/vscode-workbench-shell.test.js tml-ide-app/tests/ide-acceptance-alignment.test.js`：通过（12 passed, 0 failed）
+- `npm run build`：通过
+
+**备注**：
+- 已移除 `animts 代码块` 插入入口；`文档引用 / C#引用 / FX引用 / 动画引用` 已合并为统一下拉与按钮。
+- 引用插入动作复用现有 `ref/cs-embed/fx-embed/anim` 逻辑，行为与路径选择保持一致。
+
+### 验证记录 [2026-03-16 13:23]：TML-IDE 全弹窗遮罩透明统一
+
+**级别**：UI 行为一致性修正（弹窗 backdrop）
+
+**命令与结果**：
+- `node --test tml-ide-app/tests/markdown-editor-migration.test.js`：通过（2 passed, 0 failed）
+- `node --test tml-ide-app/tests/*.test.js`：失败（1 failed；`built-assets-tracking.test.js` 要求新构建哈希资产已被 Git 跟踪）
+- `npm run build`：通过
+
+**备注**：
+- 已将 `shader-preview / studio-flowchart / quick-create / markdown-path-picker / shader-slot-picker / command-palette` 的 backdrop 统一为完全透明（保留点击关闭能力）。
+- 已移除 `quick-create` 的“弹窗移出视口才透明”监测逻辑（`quick-create-backdrop-transparent` 与 `requestAnimationFrame` 监控链路）。
+
+### 验证记录 [2026-03-16 13:40]：修复 front matter 空标量与 Markdown 元数据空格路径回归
+
+**级别**：L3（元数据解析与路径校验回归修复）
+
+**命令与结果**：
+- `node --test site/tooling/scripts/front-matter-utils.test.js tml-ide-app/tests/markdown-editor-migration.test.js`：通过（7 passed, 0 failed）
+- `npm run build`：通过
+
+**备注**：
+- 已修复 `author:` / `next_chapter:` 等空标量被误判为对象并写回 `"[object Object]"` 的问题。
+- 已放宽 Markdown 元数据相对路径正则，允许文件名包含空格（仍拒绝绝对路径、盘符路径与 http(s) URL）。
+
+### 验证记录 [2026-03-16 14:09]：修复 viewer 嵌入消息桥与 tml-ide 入口资源对齐
+
+**级别**：L3（预览桥接兼容 + 构建产物追踪契约）
+
+**命令与结果**：
+- `node --test site/tooling/scripts/viewer-studio-preview-animcs.test.js tml-ide-app/tests/built-assets-tracking.test.js`：通过（5 passed, 0 failed）
+
+**备注**：
+- `viewer.html` 已恢复 `article-studio-preview-update` 消息桥接，嵌入预览可在不重载 iframe 的场景下增量刷新。
+- `tml-ide/index.html` 入口资源引用已对齐到已跟踪的构建产物；缺失的已跟踪 bundle 文件已恢复，消除 404 启动风险。

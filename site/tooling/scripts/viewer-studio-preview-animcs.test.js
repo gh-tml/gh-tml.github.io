@@ -26,3 +26,12 @@ test('viewer studio preview fetch bridge maps unsaved fx payload files', () => {
     assert.match(viewer, /uploadedFxFiles/);
     assert.match(viewer, /content-type': 'text\/x-hlsl; charset=utf-8'/);
 });
+
+test('viewer keeps studio embed postMessage bridge for incremental preview updates', () => {
+    const viewerPath = path.resolve('site/pages/viewer.html');
+    const viewer = fs.readFileSync(viewerPath, 'utf8');
+
+    assert.match(viewer, /installStudioPreviewMessageBridge/);
+    assert.match(viewer, /article-studio-preview-update/);
+    assert.match(viewer, /scheduleStudioPreviewReload/);
+});

@@ -22,7 +22,6 @@
                 <p class="app-subtitle">workspace: tml-ide · C# API 补全</p>
             </div>
             <div class="app-header-actions">
-                <button id="btn-markdown-toggle-preview" type="button">预览</button>
                 <button id="btn-markdown-metadata" type="button">元数据</button>
                 <button id="btn-markdown-open-viewer" type="button">新标签预览</button>
                 <button id="btn-shader-compile" type="button">编译 .fx</button>
@@ -95,32 +94,6 @@
                     </div>
                 </div>
                 <div id="editor" class="editor" aria-label="C# 编辑器"></div>
-                <section id="markdown-preview-pane" class="markdown-preview-pane" hidden>
-                    <div class="markdown-visual-layout">
-                        <section class="markdown-visual-canvas-wrap" aria-label="Markdown 可视化编辑区">
-                            <header class="markdown-visual-head">
-                                <span>可视化编辑</span>
-                                <span class="markdown-visual-head-tip">点击块后在右侧修改，代码块/表格请跳转源码编辑。</span>
-                            </header>
-                            <div id="markdown-visual-canvas" class="markdown-visual-canvas"></div>
-                        </section>
-                        <aside id="markdown-visual-inspector" class="markdown-visual-inspector" aria-label="Markdown 块属性">
-                            <header class="markdown-visual-inspector-head">
-                                <h3>块属性</h3>
-                                <span id="markdown-visual-selected-type" class="pill">未选择</span>
-                            </header>
-                            <p id="markdown-visual-empty" class="markdown-visual-empty">点击左侧块开始编辑。</p>
-                            <label for="markdown-visual-content" class="markdown-visual-label">内容</label>
-                            <textarea id="markdown-visual-content" class="markdown-visual-content" spellcheck="false" disabled></textarea>
-                            <div class="markdown-visual-actions">
-                                <button id="btn-markdown-visual-apply" type="button" disabled>应用修改</button>
-                                <button id="btn-markdown-visual-source" type="button" disabled>跳转源码编辑</button>
-                            </div>
-                            <p id="markdown-visual-help" class="markdown-visual-help">段落、标题、列表、引用块支持可视化修改。</p>
-                        </aside>
-                    </div>
-                    <iframe id="markdown-preview-frame" class="markdown-preview-frame" title="Markdown 预览" loading="lazy" hidden></iframe>
-                </section>
                 <section id="image-preview-pane" class="image-preview-pane" hidden>
                     <img id="image-preview-image" class="image-preview-image" alt="图片预览">
                 </section>
@@ -188,17 +161,22 @@
                                 <button type="button" data-md-insert="quote">引用</button>
                                 <button type="button" data-md-insert="math-inline">行内公式</button>
                                 <button type="button" data-md-insert="math-block">块公式</button>
-                                <button type="button" data-md-insert="ref">引用文档</button>
-                                <button type="button" data-md-insert="cs-embed">C# 引用</button>
-                                <button type="button" data-md-insert="anim">动画片段</button>
-                                <button type="button" data-md-insert="fx-embed">FX 引用</button>
                                 <button type="button" data-md-insert="callout-note">提示框</button>
-                                <button type="button" data-md-insert="animts-block">animts 代码块</button>
+                                <select id="md-reference-insert-kind" aria-label="引用插入模式">
+                                    <option value="ref">文档引用</option>
+                                    <option value="cs-embed">C# 引用</option>
+                                    <option value="fx-embed">FX 引用</option>
+                                    <option value="anim">动画片段引用</option>
+                                </select>
+                                <button id="btn-md-insert-reference" type="button">插入引用</button>
                                 <button type="button" data-md-insert="color-inline">单色文本</button>
                                 <button type="button" data-md-insert="color-change-inline">颜色动画文本</button>
-                                <button type="button" data-md-insert="quiz-tf">判断题</button>
-                                <button type="button" data-md-insert="quiz-choice">选择题</button>
-                                <button type="button" data-md-insert="quiz-multi">多选题</button>
+                                <select id="md-quiz-insert-kind" aria-label="题目模式">
+                                    <option value="quiz-tf">判断题</option>
+                                    <option value="quiz-choice">选择题</option>
+                                    <option value="quiz-multi">多选题</option>
+                                </select>
+                                <button id="btn-md-insert-quiz" type="button">插入题目</button>
                             </div>
                             <p class="panel-tip">支持 Ctrl+V 粘贴图片到编辑器，自动插入 Markdown 图片引用。</p>
                             <pre id="markdown-draft-check-log" class="cmd-preview">等待自检...</pre>
@@ -287,7 +265,16 @@
                 <label for="meta-author">author</label>
                 <input id="meta-author" data-meta-field="author" type="text" spellcheck="false">
                 <label for="meta-topic">topic</label>
-                <input id="meta-topic" data-meta-field="topic" type="text" spellcheck="false">
+                <select id="meta-topic" data-meta-field="topic">
+                    <option value="article-contribution">article-contribution</option>
+                    <option value="ai-agents">ai-agents</option>
+                    <option value="ai-tools">ai-tools</option>
+                    <option value="how-to-ask">how-to-ask</option>
+                    <option value="mod-basics">mod-basics</option>
+                    <option value="modder-basic">modder-basic</option>
+                    <option value="programming-mindset">programming-mindset</option>
+                    <option value="search-skills">search-skills</option>
+                </select>
                 <label for="meta-description">description</label>
                 <textarea id="meta-description" data-meta-field="description" rows="3" spellcheck="false"></textarea>
                 <label for="meta-order">order</label>
@@ -300,9 +287,33 @@
                 </select>
                 <label for="meta-time">time</label>
                 <input id="meta-time" data-meta-field="time" type="text" spellcheck="false">
+                <label for="meta-category">category</label>
+                <input id="meta-category" data-meta-field="category" type="text" spellcheck="false" list="meta-category-options">
+                <datalist id="meta-category-options">
+                    <option value="方向性指导"></option>
+                </datalist>
+                <label for="meta-date">date</label>
+                <input id="meta-date" data-meta-field="date" type="text" spellcheck="false" placeholder="YYYY-MM-DD">
+                <label for="meta-last-updated">last_updated</label>
+                <input id="meta-last-updated" data-meta-field="last_updated" type="text" spellcheck="false" placeholder="YYYY-MM-DD">
             </section>
             <details class="markdown-meta-section">
                 <summary>高级字段</summary>
+                <label for="meta-next-chapter">next_chapter</label>
+                <div class="markdown-meta-inline-actions">
+                    <input id="meta-next-chapter" data-meta-field="next_chapter" type="text" spellcheck="false" placeholder="./chapter-next.md">
+                    <button id="btn-meta-pick-next-chapter" type="button">选择 Markdown</button>
+                </div>
+                <label for="meta-prev-chapter">prev_chapter</label>
+                <div class="markdown-meta-inline-actions">
+                    <input id="meta-prev-chapter" data-meta-field="prev_chapter" type="text" spellcheck="false" placeholder="./chapter-prev.md">
+                    <button id="btn-meta-pick-prev-chapter" type="button">选择 Markdown</button>
+                </div>
+                <label for="meta-source-cs">source_cs（每行一个 C# 路径）</label>
+                <div class="markdown-meta-inline-actions markdown-meta-inline-actions-stack">
+                    <textarea id="meta-source-cs" data-meta-field="source_cs" rows="3" spellcheck="false"></textarea>
+                    <button id="btn-meta-pick-source-cs" type="button">选择并追加 C#</button>
+                </div>
                 <label for="meta-prefix">prefix（每行一个 Markdown 链接）</label>
                 <textarea id="meta-prefix" data-meta-field="prefix" rows="4" spellcheck="false"></textarea>
                 <label for="meta-min-c">min_c</label>
@@ -539,6 +550,24 @@
             </div>
             <footer class="quick-create-actions">
                 <button id="btn-quick-create-submit" type="button">创建</button>
+            </footer>
+        </section>
+    </div>
+
+    <div id="markdown-path-picker-modal" class="markdown-path-picker-modal" hidden>
+        <button id="markdown-path-picker-backdrop" class="markdown-path-picker-backdrop" type="button" aria-label="关闭路径选择"></button>
+        <section class="markdown-path-picker-dialog" role="dialog" aria-modal="true" aria-label="Markdown 路径选择">
+            <header class="markdown-path-picker-head">
+                <h3 id="markdown-path-picker-title">选择引用文件</h3>
+                <button id="btn-markdown-path-picker-close" type="button">关闭</button>
+            </header>
+            <div class="markdown-path-picker-body">
+                <input id="markdown-path-picker-filter" type="text" spellcheck="false" placeholder="输入关键字筛选路径">
+                <p id="markdown-path-picker-tip" class="markdown-path-picker-tip">请选择要插入的工作区文件。</p>
+                <div id="markdown-path-picker-list" class="markdown-path-picker-list"></div>
+            </div>
+            <footer class="markdown-path-picker-actions">
+                <button id="btn-markdown-path-picker-cancel" type="button">取消</button>
             </footer>
         </section>
     </div>
