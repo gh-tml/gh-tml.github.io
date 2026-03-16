@@ -95,30 +95,26 @@
                 </div>
                 <div id="editor" class="editor" aria-label="C# 编辑器"></div>
                 <section id="markdown-preview-pane" class="markdown-preview-pane" hidden>
-                    <div class="markdown-visual-layout">
-                        <section class="markdown-visual-canvas-wrap" aria-label="Markdown 可视化编辑区">
-                            <header class="markdown-visual-head">
-                                <span>可视化编辑</span>
-                                <span class="markdown-visual-head-tip">点击块后在右侧修改，代码块/表格请跳转源码编辑。</span>
-                            </header>
-                            <div id="markdown-visual-canvas" class="markdown-visual-canvas"></div>
-                        </section>
-                        <aside id="markdown-visual-inspector" class="markdown-visual-inspector" aria-label="Markdown 块属性">
-                            <header class="markdown-visual-inspector-head">
-                                <h3>块属性</h3>
-                                <span id="markdown-visual-selected-type" class="pill">未选择</span>
-                            </header>
-                            <p id="markdown-visual-empty" class="markdown-visual-empty">点击左侧块开始编辑。</p>
-                            <label for="markdown-visual-content" class="markdown-visual-label">内容</label>
-                            <textarea id="markdown-visual-content" class="markdown-visual-content" spellcheck="false" disabled></textarea>
-                            <div class="markdown-visual-actions">
-                                <button id="btn-markdown-visual-apply" type="button" disabled>应用修改</button>
-                                <button id="btn-markdown-visual-source" type="button" disabled>跳转源码编辑</button>
+                    <div class="markdown-wysiwyg-layout">
+                        <header id="markdown-wysiwyg-toolbar" class="markdown-wysiwyg-toolbar">
+                            <div class="markdown-wysiwyg-title-wrap">
+                                <strong>Viewer 所见即所得</strong>
+                                <span id="markdown-wysiwyg-selection" class="markdown-wysiwyg-selection">未选中块</span>
                             </div>
-                            <p id="markdown-visual-help" class="markdown-visual-help">段落、标题、列表、引用块支持可视化修改。</p>
-                        </aside>
+                            <div class="markdown-wysiwyg-actions">
+                                <button id="btn-md-wys-bold" type="button">加粗</button>
+                                <button id="btn-md-wys-italic" type="button">斜体</button>
+                                <button id="btn-md-wys-link" type="button">链接</button>
+                                <button id="btn-md-wys-jump-source" type="button">跳源码</button>
+                                <button id="btn-md-wys-move-up" type="button">上移块</button>
+                                <button id="btn-md-wys-move-down" type="button">下移块</button>
+                                <button id="btn-md-wys-delete" type="button">删除块</button>
+                            </div>
+                        </header>
+                        <div class="markdown-wysiwyg-stage">
+                            <iframe id="markdown-preview-frame" class="markdown-preview-frame" title="Markdown Viewer 可视化编辑" loading="lazy"></iframe>
+                        </div>
                     </div>
-                    <iframe id="markdown-preview-frame" class="markdown-preview-frame" title="Markdown 预览" loading="lazy" hidden></iframe>
                 </section>
                 <section id="image-preview-pane" class="image-preview-pane" hidden>
                     <img id="image-preview-image" class="image-preview-image" alt="图片预览">
@@ -189,15 +185,21 @@
                                 <button type="button" data-md-insert="math-block">块公式</button>
                                 <button type="button" data-md-insert="ref">引用文档</button>
                                 <button type="button" data-md-insert="cs-embed">C# 引用</button>
-                                <button type="button" data-md-insert="anim">动画片段</button>
                                 <button type="button" data-md-insert="fx-embed">FX 引用</button>
                                 <button type="button" data-md-insert="callout-note">提示框</button>
-                                <button type="button" data-md-insert="animts-block">animts 代码块</button>
+                                <select id="md-animation-insert-kind" aria-label="动画插入模式">
+                                    <option value="anim">动画片段引用</option>
+                                    <option value="animts-block">animts 代码块</option>
+                                </select>
+                                <button id="btn-md-insert-animation" type="button">插入动画</button>
                                 <button type="button" data-md-insert="color-inline">单色文本</button>
                                 <button type="button" data-md-insert="color-change-inline">颜色动画文本</button>
-                                <button type="button" data-md-insert="quiz-tf">判断题</button>
-                                <button type="button" data-md-insert="quiz-choice">选择题</button>
-                                <button type="button" data-md-insert="quiz-multi">多选题</button>
+                                <select id="md-quiz-insert-kind" aria-label="题目模式">
+                                    <option value="quiz-tf">判断题</option>
+                                    <option value="quiz-choice">选择题</option>
+                                    <option value="quiz-multi">多选题</option>
+                                </select>
+                                <button id="btn-md-insert-quiz" type="button">插入题目</button>
                             </div>
                             <p class="panel-tip">支持 Ctrl+V 粘贴图片到编辑器，自动插入 Markdown 图片引用。</p>
                             <pre id="markdown-draft-check-log" class="cmd-preview">等待自检...</pre>
@@ -538,6 +540,24 @@
             </div>
             <footer class="quick-create-actions">
                 <button id="btn-quick-create-submit" type="button">创建</button>
+            </footer>
+        </section>
+    </div>
+
+    <div id="markdown-path-picker-modal" class="markdown-path-picker-modal" hidden>
+        <button id="markdown-path-picker-backdrop" class="markdown-path-picker-backdrop" type="button" aria-label="关闭路径选择"></button>
+        <section class="markdown-path-picker-dialog" role="dialog" aria-modal="true" aria-label="Markdown 路径选择">
+            <header class="markdown-path-picker-head">
+                <h3 id="markdown-path-picker-title">选择引用文件</h3>
+                <button id="btn-markdown-path-picker-close" type="button">关闭</button>
+            </header>
+            <div class="markdown-path-picker-body">
+                <input id="markdown-path-picker-filter" type="text" spellcheck="false" placeholder="输入关键字筛选路径">
+                <p id="markdown-path-picker-tip" class="markdown-path-picker-tip">请选择要插入的工作区文件。</p>
+                <div id="markdown-path-picker-list" class="markdown-path-picker-list"></div>
+            </div>
+            <footer class="markdown-path-picker-actions">
+                <button id="btn-markdown-path-picker-cancel" type="button">取消</button>
             </footer>
         </section>
     </div>

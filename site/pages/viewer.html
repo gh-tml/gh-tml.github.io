@@ -58,8 +58,7 @@
         html[data-studio-embed='1'] #table-of-contents,
         html[data-studio-embed='1'] #source-code-section,
         html[data-studio-embed='1'] .mobile-nav-toggle,
-        html[data-studio-embed='1'] .mobile-menu-toggle,
-        html[data-studio-embed='1'] .viewer-ai-fab-wrap {
+        html[data-studio-embed='1'] .mobile-menu-toggle {
             display: none !important;
         }
 
@@ -108,220 +107,6 @@
 
         html[data-studio-embed='1'] #markdown-content > :last-child {
             margin-bottom: 0 !important;
-        }
-
-        body.workbench-page .viewer-ai-fab-wrap {
-            position: fixed;
-            right: 18px;
-            bottom: 20px;
-            z-index: 1200;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-            touch-action: pan-y;
-        }
-
-        .viewer-ai-fab-wrap[data-panel-align='left'] {
-            align-items: flex-start;
-        }
-
-        .viewer-ai-fab-wrap[data-panel-align='right'] {
-            align-items: flex-end;
-        }
-
-        .viewer-ai-fab-wrap.viewer-ai-fab-wrap--dragging {
-            touch-action: none;
-        }
-
-        .viewer-ai-fab {
-            width: 52px;
-            height: 52px;
-            border: 1px solid var(--border-color);
-            border-radius: 999px;
-            background: var(--primary-color);
-            color: var(--text-color);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            user-select: none;
-            touch-action: manipulation;
-        }
-
-        html[data-theme='dark'] .viewer-ai-fab {
-            color: var(--text-color);
-        }
-
-        html:not([data-theme='dark']) .viewer-ai-fab {
-            color: var(--bg-color);
-        }
-
-        .viewer-ai-fab:hover,
-        .viewer-ai-fab:focus-visible {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            outline: none;
-        }
-
-        .viewer-ai-fab.viewer-ai-fab--dragging {
-            cursor: grabbing;
-            transform: none;
-        }
-
-        .viewer-ai-panel {
-            width: clamp(420px, 50vw, 860px);
-            max-height: min(82vh, 860px);
-            overflow: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            background: var(--bg-secondary);
-            color: var(--text-color);
-            box-shadow: var(--shadow-lg);
-            padding: 16px;
-            display: grid;
-            gap: 10px;
-        }
-
-        .viewer-ai-panel[hidden] {
-            display: none;
-        }
-
-        .viewer-ai-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .viewer-ai-panel-header h3 {
-            margin: 0;
-            font-size: 14px;
-        }
-
-        .viewer-ai-close {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--bg-color);
-            color: var(--text-color);
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-        }
-
-        .viewer-ai-auth {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .viewer-ai-notice {
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-color);
-            color: var(--text-secondary);
-            padding: 8px 10px;
-            font-size: 12px;
-            line-height: 1.55;
-        }
-
-        .viewer-ai-auth-status,
-        .viewer-ai-cooldown {
-            display: inline-flex;
-            align-items: center;
-            min-height: 30px;
-            padding: 0 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-color);
-            color: var(--text-secondary);
-            font-size: 12px;
-        }
-
-        .viewer-ai-panel label {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .viewer-ai-input,
-        .viewer-ai-endpoint,
-        .viewer-ai-output {
-            width: 100%;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--bg-color);
-            color: var(--text-color);
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .viewer-ai-endpoint {
-            padding: 8px 10px;
-        }
-
-        .viewer-ai-input {
-            min-height: clamp(120px, 20vh, 220px);
-            resize: vertical;
-            padding: 8px 10px;
-        }
-
-        .viewer-ai-output {
-            margin: 0;
-            min-height: clamp(180px, 32vh, 420px);
-            max-height: min(56vh, 520px);
-            overflow: auto;
-            padding: 10px;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        .viewer-ai-output.viewer-ai-output--markdown {
-            white-space: normal;
-            line-height: 1.65;
-        }
-
-        .viewer-ai-output.viewer-ai-output--markdown h1,
-        .viewer-ai-output.viewer-ai-output--markdown h2,
-        .viewer-ai-output.viewer-ai-output--markdown h3,
-        .viewer-ai-output.viewer-ai-output--markdown h4,
-        .viewer-ai-output.viewer-ai-output--markdown h5,
-        .viewer-ai-output.viewer-ai-output--markdown h6 {
-            margin: 0.6em 0 0.45em;
-            line-height: 1.35;
-        }
-
-        .viewer-ai-output.viewer-ai-output--markdown p,
-        .viewer-ai-output.viewer-ai-output--markdown ul,
-        .viewer-ai-output.viewer-ai-output--markdown ol,
-        .viewer-ai-output.viewer-ai-output--markdown blockquote,
-        .viewer-ai-output.viewer-ai-output--markdown pre,
-        .viewer-ai-output.viewer-ai-output--markdown table {
-            margin: 0.55em 0;
-        }
-
-        .viewer-ai-output.viewer-ai-output--markdown blockquote {
-            margin-left: 0;
-            padding-left: 0.8em;
-            border-left: 3px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-
-        .viewer-ai-output.viewer-ai-output--markdown pre {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-secondary);
-            padding: 10px;
-            overflow: auto;
-        }
-
-        .viewer-ai-output.viewer-ai-output--markdown code {
-            font-family: var(--font-family-tutorial);
-            font-size: 12px;
-        }
-
-        .viewer-ai-output.viewer-ai-output--markdown a {
-            color: var(--primary-color);
-            text-decoration: underline;
         }
 
         .md-callout {
@@ -1037,39 +822,6 @@
             }
         }
 
-        .viewer-ai-input:focus,
-        .viewer-ai-endpoint:focus,
-        .viewer-ai-close:focus-visible,
-        .viewer-ai-fab:focus-visible {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px var(--search-focus);
-        }
-
-        .viewer-ai-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        @media (max-width: 640px) {
-            .viewer-ai-fab-wrap {
-                right: 10px;
-                bottom: 12px;
-            }
-
-            .viewer-ai-panel {
-                width: min(100vw - 12px, 100vw - 12px);
-                max-height: 86vh;
-                padding: 12px;
-            }
-
-            .viewer-ai-output {
-                min-height: 34vh;
-                max-height: 58vh;
-            }
-        }
     </style>
 
 </head>
@@ -1331,32 +1083,6 @@
 	    </div>
 
 	    <div class="learning-sidebar-panel" id="learning-sidebar-panel" hidden></div>
-
-	    <div class="viewer-ai-fab-wrap" id="viewer-ai-root">
-	        <button class="viewer-ai-fab" id="viewer-ai-fab" type="button" aria-label="打开 AI 对话" aria-controls="viewer-ai-panel" aria-expanded="false">AI</button>
-	        <section class="viewer-ai-panel" id="viewer-ai-panel" aria-label="AI 对话服务" hidden>
-	            <div class="viewer-ai-panel-header">
-	                <h3>AI 对话</h3>
-	                <button class="viewer-ai-close" id="viewer-ai-close" type="button" aria-label="关闭 AI 对话">✕</button>
-	            </div>
-	            <div class="viewer-ai-auth">
-	                <span class="viewer-ai-auth-status" id="viewer-ai-auth-status">未登录</span>
-	                <button class="btn btn-small" id="viewer-ai-login" type="button">GitHub 登录</button>
-	                <button class="btn btn-small btn-outline" id="viewer-ai-logout" type="button">退出</button>
-	            </div>
-	            <div class="viewer-ai-notice" id="viewer-ai-notice">AI 生成内容可能不准确，请以教程原文为准。</div>
-	            <label for="viewer-ai-endpoint">AI API 地址</label>
-	            <input class="viewer-ai-endpoint" id="viewer-ai-endpoint" type="text" autocomplete="off">
-	            <div class="viewer-ai-actions">
-	                <button class="btn btn-small" id="viewer-ai-send" type="button">发送 AI 对话</button>
-	                <span class="viewer-ai-cooldown" id="viewer-ai-cooldown">可发送</span>
-	            </div>
-	            <label for="viewer-ai-input">提问内容</label>
-	            <textarea class="viewer-ai-input" id="viewer-ai-input" rows="4" placeholder="输入你的问题，然后发送给 AI。"></textarea>
-	            <label for="viewer-ai-output">AI 回复</label>
-	            <div class="viewer-ai-output" id="viewer-ai-output" role="status" aria-live="polite">等待提问...</div>
-	        </section>
-	    </div>
 
 		    <!-- 加载JavaScript文件 -->
 			    <script src="/shared/assets/js/site-core.js"></script>
@@ -7012,6 +6738,7 @@
 		                        const renderedHTML = marked.parse(content);
 		                        console.log('Markdown渲染完成，HTML长度:', renderedHTML.length);
 		                        markdownContent.innerHTML = renderedHTML;
+                                annotateStudioSourceBlocks(markdownContent, content);
                                 installStudioPreviewAnimResolver(markdownContent);
                                 installFxEmbedInteractions(markdownContent);
                                 applyMarkdownCalloutBlocks(markdownContent);
@@ -7971,6 +7698,110 @@
             } catch (error) {
                 console.warn('KaTeX 渲染失败，已回退到原始公式文本:', error);
             }
+        }
+
+        function normalizeStudioSourceBlockKind(token) {
+            const safeToken = token && typeof token === 'object' ? token : {};
+            const type = String(safeToken.type || '').trim().toLowerCase();
+            if (type === 'heading') return 'heading';
+            if (type === 'paragraph') return 'paragraph';
+            if (type === 'list') return 'list';
+            if (type === 'blockquote') return 'quote';
+            if (type === 'code') return 'code';
+            if (type === 'table') return 'table';
+            if (type === 'hr') return 'hr';
+            if (type === 'space') return 'space';
+            return 'html';
+        }
+
+        function countStudioTokenLines(rawMarkdown) {
+            const normalized = String(rawMarkdown || '').replace(/\r\n/g, '\n');
+            if (!normalized) return 1;
+            const lineCount = normalized.split('\n').length;
+            if (normalized.endsWith('\n')) {
+                return Math.max(1, lineCount - 1);
+            }
+            return Math.max(1, lineCount);
+        }
+
+        function buildStudioSourceBlockDescriptors(markdownSource) {
+            if (!window.marked || typeof window.marked.lexer !== 'function') return [];
+            let tokens = [];
+            try {
+                tokens = window.marked.lexer(String(markdownSource || ''));
+            } catch (_error) {
+                tokens = [];
+            }
+            let currentLine = 1;
+            const descriptors = [];
+            (Array.isArray(tokens) ? tokens : []).forEach(function (token) {
+                const kind = normalizeStudioSourceBlockKind(token);
+                const consumedLines = countStudioTokenLines(token && token.raw);
+                const startLine = currentLine;
+                const endLineExclusive = currentLine + consumedLines;
+                currentLine = endLineExclusive;
+                if (kind === 'space') return;
+                descriptors.push({
+                    kind: kind,
+                    startLine: startLine,
+                    endLineExclusive: endLineExclusive
+                });
+            });
+            return descriptors;
+        }
+
+        function elementMatchesStudioBlockKind(element, kind) {
+            const safeElement = element && element.tagName ? element : null;
+            const safeKind = String(kind || '').trim().toLowerCase();
+            if (!safeElement) return false;
+            const tag = String(safeElement.tagName || '').toUpperCase();
+            if (safeKind === 'heading') return /^H[1-6]$/.test(tag);
+            if (safeKind === 'paragraph') return tag === 'P';
+            if (safeKind === 'list') return tag === 'UL' || tag === 'OL';
+            if (safeKind === 'quote') return tag === 'BLOCKQUOTE';
+            if (safeKind === 'code') return tag === 'PRE';
+            if (safeKind === 'table') return tag === 'TABLE';
+            if (safeKind === 'hr') return tag === 'HR';
+            return true;
+        }
+
+        function annotateStudioSourceBlocks(container, markdownSource) {
+            if (!STUDIO_EMBED_MODE) return;
+            const root = container || document.getElementById('markdown-content');
+            if (!root) return;
+            const elements = Array.from(root.children || []).filter(function (node) {
+                return !!(node && node.nodeType === 1);
+            });
+            if (elements.length <= 0) return;
+
+            elements.forEach(function (element) {
+                element.removeAttribute('data-src-start');
+                element.removeAttribute('data-src-end');
+                element.removeAttribute('data-block-kind');
+            });
+
+            const descriptors = buildStudioSourceBlockDescriptors(markdownSource);
+            if (descriptors.length <= 0) return;
+
+            let cursor = 0;
+            descriptors.forEach(function (descriptor) {
+                let index = -1;
+                for (let i = cursor; i < elements.length; i += 1) {
+                    if (elementMatchesStudioBlockKind(elements[i], descriptor.kind)) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index < 0 && cursor < elements.length) {
+                    index = cursor;
+                }
+                if (index < 0) return;
+                const element = elements[index];
+                element.setAttribute('data-src-start', String(descriptor.startLine));
+                element.setAttribute('data-src-end', String(descriptor.endLineExclusive));
+                element.setAttribute('data-block-kind', descriptor.kind);
+                cursor = index + 1;
+            });
         }
 
         // 将难度代码转换为中文文本
@@ -9088,1067 +8919,6 @@
             const observer = new MutationObserver(checkScrollNeeded);
             observer.observe(sidebar, { childList: true, subtree: true });
         }
-    </script>
-    <script>
-        (function () {
-            'use strict';
-
-            const VIEWER_AUTH_WORKER_ORIGIN = 'https://greenhome-pr.3577415213.workers.dev';
-            const VIEWER_AI_ENDPOINT = 'https://jjktycjjcsbulyunqlqe.supabase.co/functions/v1/ai-chat';
-            const VIEWER_AI_COOLDOWN_SECONDS = 60;
-            const VIEWER_AI_COOLDOWN_STORAGE_KEY = 'viewerAiCooldownUntil.v1';
-            const VIEWER_AI_FAB_POSITION_STORAGE_KEY = 'viewerAiFabPosition.v1';
-            const VIEWER_AUTH_TOKEN_KEY = 'articleStudioOAuthToken.v1';
-            const VIEWER_AUTH_USER_KEY = 'articleStudioOAuthUser.v1';
-
-            const dom = {
-                root: document.getElementById('viewer-ai-root'),
-                fab: document.getElementById('viewer-ai-fab'),
-                panel: document.getElementById('viewer-ai-panel'),
-                close: document.getElementById('viewer-ai-close'),
-                endpoint: document.getElementById('viewer-ai-endpoint'),
-                input: document.getElementById('viewer-ai-input'),
-                send: document.getElementById('viewer-ai-send'),
-                cooldown: document.getElementById('viewer-ai-cooldown'),
-                output: document.getElementById('viewer-ai-output'),
-                login: document.getElementById('viewer-ai-login'),
-                logout: document.getElementById('viewer-ai-logout'),
-                authStatus: document.getElementById('viewer-ai-auth-status')
-            };
-
-            if (!dom.root || !dom.fab || !dom.panel) {
-                return;
-            }
-
-            const state = {
-                authToken: '',
-                githubUser: '',
-                aiBusy: false,
-                aiCooldownUntil: 0,
-                fabDragging: false
-            };
-
-            let cooldownTimer = 0;
-
-            function parsePx(value) {
-                if (value == null) return null;
-                const parsed = Number.parseFloat(String(value));
-                if (!Number.isFinite(parsed)) return null;
-                return parsed;
-            }
-
-            function clampFabPosition(left, top) {
-                const viewportW = window.innerWidth || document.documentElement.clientWidth || 0;
-                const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
-                const rootRect = dom.root.getBoundingClientRect();
-                const fallbackFabRect = dom.fab.getBoundingClientRect();
-                const rootWidth = Math.max(rootRect.width || 0, fallbackFabRect.width || 0);
-                const rootHeight = Math.max(rootRect.height || 0, fallbackFabRect.height || 0);
-                const maxLeft = Math.max(0, viewportW - rootWidth);
-                const maxTop = Math.max(0, viewportH - rootHeight);
-
-                const clampedTop = Math.max(0, Math.min(Number(top || 0), maxTop));
-                const clampedLeft = Math.max(0, Math.min(Number(left || 0), maxLeft));
-
-                return {
-                    left: clampedLeft,
-                    top: clampedTop
-                };
-            }
-
-            function updatePanelAlignByFabPosition() {
-                const viewportW = window.innerWidth || document.documentElement.clientWidth || 0;
-                const fabRect = dom.fab.getBoundingClientRect();
-                const centerX = fabRect.left + fabRect.width / 2;
-                const align = centerX < viewportW / 2 ? 'left' : 'right';
-                dom.root.setAttribute('data-panel-align', align);
-            }
-
-            function applyFabPosition(left, top, persist) {
-                const clamped = clampFabPosition(left, top);
-                dom.root.style.left = `${Math.round(clamped.left)}px`;
-                dom.root.style.top = `${Math.round(clamped.top)}px`;
-                dom.root.style.right = 'auto';
-                dom.root.style.bottom = 'auto';
-
-                updatePanelAlignByFabPosition();
-
-                if (persist) {
-                    try {
-                        localStorage.setItem(VIEWER_AI_FAB_POSITION_STORAGE_KEY, JSON.stringify({
-                            left: Math.round(clamped.left),
-                            top: Math.round(clamped.top)
-                        }));
-                    } catch (_) {
-                        // ignore local storage failures
-                    }
-                }
-            }
-
-            function setFabDefaultPosition() {
-                const viewportW = window.innerWidth || document.documentElement.clientWidth || 0;
-                const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
-                const fabRect = dom.fab.getBoundingClientRect();
-                const left = Math.max(0, viewportW - fabRect.width - 18);
-                const top = Math.max(0, viewportH - fabRect.height - 20);
-                applyFabPosition(left, top, false);
-            }
-
-            function snapFabToEdge(left, top, persist) {
-                const viewportW = window.innerWidth || document.documentElement.clientWidth || 0;
-                const safeLeft = parsePx(left);
-                const safeTop = parsePx(top);
-
-                if (safeLeft == null || safeTop == null) {
-                    return;
-                }
-
-                const rootRect = dom.root.getBoundingClientRect();
-                const fallbackFabRect = dom.fab.getBoundingClientRect();
-                const rootWidth = Math.max(rootRect.width || 0, fallbackFabRect.width || 0);
-                const maxLeft = Math.max(0, viewportW - rootWidth);
-                const midpoint = maxLeft / 2;
-                const clamped = clampFabPosition(safeLeft, safeTop);
-                const targetLeft = clamped.left <= midpoint ? 0 : maxLeft;
-
-                applyFabPosition(targetLeft, clamped.top, !!persist);
-            }
-
-            function restoreFabPosition() {
-                try {
-                    const raw = localStorage.getItem(VIEWER_AI_FAB_POSITION_STORAGE_KEY);
-                    if (!raw) {
-                        setFabDefaultPosition();
-                        return;
-                    }
-
-                    const parsed = JSON.parse(raw);
-                    if (!parsed || typeof parsed !== 'object') {
-                        setFabDefaultPosition();
-                        return;
-                    }
-
-                    const left = parsePx(parsed.left);
-                    const top = parsePx(parsed.top);
-                    if (left == null || top == null) {
-                        setFabDefaultPosition();
-                        return;
-                    }
-
-                    snapFabToEdge(left, top, false);
-                } catch (_) {
-                    setFabDefaultPosition();
-                }
-            }
-
-            function setupFabDrag() {
-                if (!dom.fab) return;
-
-                let pointerId = null;
-                let startX = 0;
-                let startY = 0;
-                let originLeft = 0;
-                let originTop = 0;
-                let moved = false;
-                let activePointerType = '';
-
-                function onPointerMove(event) {
-                    if (pointerId == null || event.pointerId !== pointerId) return;
-
-                    const dx = event.clientX - startX;
-                    const dy = event.clientY - startY;
-                    const dragThreshold = activePointerType === 'touch' ? 8 : 3;
-
-                    if (!moved && (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold)) {
-                        moved = true;
-                        state.fabDragging = true;
-                        dom.fab.classList.add('viewer-ai-fab--dragging');
-                        dom.root.classList.add('viewer-ai-fab-wrap--dragging');
-                    }
-
-                    if (!moved) return;
-
-                    event.preventDefault();
-                    applyFabPosition(originLeft + dx, originTop + dy, false);
-                }
-
-                function endDrag(event) {
-                    if (pointerId == null || event.pointerId !== pointerId) return;
-
-                    if (moved) {
-                        const left = parsePx(dom.root.style.left);
-                        const top = parsePx(dom.root.style.top);
-                        if (left != null && top != null) {
-                            snapFabToEdge(left, top, true);
-                        }
-                    }
-
-                    pointerId = null;
-                    moved = false;
-                    activePointerType = '';
-                    state.fabDragging = false;
-                    dom.fab.classList.remove('viewer-ai-fab--dragging');
-                    dom.root.classList.remove('viewer-ai-fab-wrap--dragging');
-
-                    window.removeEventListener('pointermove', onPointerMove);
-                    window.removeEventListener('pointerup', endDrag);
-                    window.removeEventListener('pointercancel', endDrag);
-                }
-
-                dom.fab.addEventListener('pointerdown', function (event) {
-                    if (event.button !== 0) return;
-
-                    pointerId = event.pointerId;
-                    moved = false;
-                    activePointerType = String(event.pointerType || '');
-                    startX = event.clientX;
-                    startY = event.clientY;
-
-                    const currentLeft = parsePx(dom.root.style.left);
-                    const currentTop = parsePx(dom.root.style.top);
-                    originLeft = currentLeft == null ? dom.root.getBoundingClientRect().left : currentLeft;
-                    originTop = currentTop == null ? dom.root.getBoundingClientRect().top : currentTop;
-
-                    if (typeof dom.fab.setPointerCapture === 'function') {
-                        dom.fab.setPointerCapture(pointerId);
-                    }
-
-                    window.addEventListener('pointermove', onPointerMove, { passive: false });
-                    window.addEventListener('pointerup', endDrag);
-                    window.addEventListener('pointercancel', endDrag);
-                });
-            }
-
-            function isStudioEmbedModeEnabled() {
-                const attrFlag = document.documentElement.getAttribute('data-studio-embed') === '1';
-                if (attrFlag) return true;
-
-                try {
-                    const url = new URL(window.location.href);
-                    const flag = String(url.searchParams.get('studio_embed') || '').trim().toLowerCase();
-                    const requested = flag === '1' || flag === 'true' || flag === 'yes';
-                    if (requested && window.parent !== window) return true;
-                } catch (_) {
-                    // ignore url parse errors
-                }
-
-                return false;
-            }
-
-            function normalizeAiApiUrl(input) {
-                let value = String(input || '').trim();
-                if (!value) return '';
-
-                if (!/^https?:\/\//i.test(value)) {
-                    value = `https://${value}`;
-                }
-
-                return value.replace(/\/+$/, '');
-            }
-
-            function renderAiMarkdown(markdownText) {
-                const source = String(markdownText || '').trim();
-                if (!source) return '等待提问...';
-
-                if (!window.marked || typeof window.marked.parse !== 'function') {
-                    return source
-                        .replace(/&/g, '&amp;')
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;')
-                        .replace(/\n/g, '<br>');
-                }
-
-                try {
-                    return window.marked.parse(source);
-                } catch (_) {
-                    return source
-                        .replace(/&/g, '&amp;')
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;')
-                        .replace(/\n/g, '<br>');
-                }
-            }
-
-            function setAiOutput(text, options) {
-                if (!dom.output) return;
-                const opts = options && typeof options === 'object' ? options : {};
-                const useMarkdown = !!opts.markdown;
-
-                if (useMarkdown) {
-                    dom.output.classList.add('viewer-ai-output--markdown');
-                    dom.output.innerHTML = renderAiMarkdown(text);
-                    applyMarkdownCalloutBlocks(dom.output);
-                    renderMarkdownMath(dom.output);
-                    return;
-                }
-
-                dom.output.classList.remove('viewer-ai-output--markdown');
-                dom.output.textContent = String(text || '') || '等待提问...';
-            }
-
-            function getCurrentArticleContextForAi(maxChars) {
-                const limit = Number.isFinite(Number(maxChars))
-                    ? Math.max(400, Math.floor(Number(maxChars)))
-                    : 2400;
-                const titleEl = document.getElementById('doc-title');
-                const articleTitle = titleEl ? String(titleEl.textContent || '').trim() : '';
-                const articlePath = String(CURRENT_DOC_PATH || '').trim();
-
-                let articleText = '';
-                const markdownEl = document.getElementById('markdown-content');
-                if (markdownEl) {
-                    articleText = String(markdownEl.textContent || '').replace(/\s+/g, ' ').trim();
-                }
-
-                if (articleText.length > limit) {
-                    articleText = `${articleText.slice(0, limit)}...`;
-                }
-
-                return {
-                    title: articleTitle || '未命名文章',
-                    path: articlePath || '未知路径',
-                    text: articleText || '当前文章正文暂不可用'
-                };
-            }
-
-            function buildTutorialIndexRecords() {
-                if (!Array.isArray(ALL_DOCS) || ALL_DOCS.length === 0) {
-                    return [];
-                }
-
-                const records = [];
-                for (const doc of ALL_DOCS) {
-                    if (!doc || typeof doc !== 'object') continue;
-                    const path = String(doc.path || doc.filename || '').trim();
-                    if (!path) continue;
-
-                    records.push({
-                        path: path,
-                        href: `viewer.html?file=${encodeURIComponent(path)}`,
-                        title: String(doc.title || doc.filename || path).trim() || path,
-                        category: String(doc.category || '未分类').trim() || '未分类',
-                        description: String(doc.description || '').replace(/\s+/g, ' ').trim(),
-                        order: Number(doc.order || 9999)
-                    });
-                }
-
-                records.sort(function (left, right) {
-                    const categoryCompare = left.category.localeCompare(right.category, 'zh-Hans-CN');
-                    if (categoryCompare !== 0) return categoryCompare;
-
-                    const orderCompare = left.order - right.order;
-                    if (orderCompare !== 0) return orderCompare;
-
-                    return left.title.localeCompare(right.title, 'zh-Hans-CN');
-                });
-
-                return records;
-            }
-
-            function collectIndexIntentTokens(prompt) {
-                const text = String(prompt || '').toLowerCase();
-                if (!text) return [];
-
-                const groups = [
-                    { label: '入门', keys: ['入门', '新手', '基础', '从零', '刚开始', '初学'] },
-                    { label: 'C#', keys: ['c#', 'csharp', '语法', '变量', '函数', '类'] },
-                    { label: 'tModLoader', keys: ['tmodloader', '模组', 'mod', '环境', '安装'] },
-                    { label: 'UI', keys: ['ui', '界面', '按钮', '面板'] },
-                    { label: '网络', keys: ['网络', '联机', '同步', '多人'] },
-                    { label: '物品', keys: ['物品', '武器', '掉落', '装备'] },
-                    { label: 'NPC', keys: ['npc', '怪物', '敌怪', '生物群系'] }
-                ];
-
-                const tokens = [];
-                groups.forEach(function (group) {
-                    if (group.keys.some(function (key) { return text.includes(String(key).toLowerCase()); })) {
-                        tokens.push(group.label);
-                    }
-                });
-
-                const asciiWords = text
-                    .replace(/[^a-z0-9#.+\-\s]/g, ' ')
-                    .split(/\s+/)
-                    .map(function (item) { return item.trim(); })
-                    .filter(function (item) { return item.length >= 2; })
-                    .slice(0, 8);
-
-                asciiWords.forEach(function (word) {
-                    if (!tokens.includes(word)) {
-                        tokens.push(word);
-                    }
-                });
-
-                return tokens.slice(0, 10);
-            }
-
-            function buildLocalIndexRecommendationMarkdown(prompt) {
-                const records = buildTutorialIndexRecords();
-                if (records.length === 0) {
-                    return [
-                        '> AI 生成内容可能不准确，请以教程原文为准。',
-                        '',
-                        '当前无法读取教程索引，请稍后重试。'
-                    ].join('\n');
-                }
-
-                const promptText = String(prompt || '').trim();
-                const tokens = collectIndexIntentTokens(promptText);
-                const currentPath = String(CURRENT_DOC_PATH || '').trim().toLowerCase();
-
-                let currentCategory = '';
-                if (currentPath) {
-                    const currentRecord = records.find(function (item) {
-                        return item.path.toLowerCase() === currentPath;
-                    });
-                    currentCategory = currentRecord ? currentRecord.category : '';
-                }
-
-                const scored = records.map(function (item) {
-                    const searchable = `${item.title} ${item.category} ${item.description} ${item.path}`.toLowerCase();
-                    const matched = [];
-                    let score = 0;
-
-                    if (currentCategory && item.category === currentCategory) {
-                        score += 6;
-                    }
-
-                    if (currentPath && item.path.toLowerCase() === currentPath) {
-                        score -= 30;
-                    }
-
-                    tokens.forEach(function (token) {
-                        if (searchable.includes(String(token).toLowerCase())) {
-                            score += 10;
-                            matched.push(token);
-                        }
-                    });
-
-                    if (searchable.includes('入门') || searchable.includes('基础') || searchable.includes('第一')) {
-                        score += 2;
-                    }
-
-                    return {
-                        item: item,
-                        score: score,
-                        matchedTokens: matched
-                    };
-                }).sort(function (left, right) {
-                    if (right.score !== left.score) return right.score - left.score;
-                    if (left.item.order !== right.item.order) return left.item.order - right.item.order;
-                    return left.item.title.localeCompare(right.item.title, 'zh-Hans-CN');
-                });
-
-                const selected = [];
-                const selectedPaths = new Set();
-
-                function tryPush(entry) {
-                    if (!entry || !entry.item) return;
-                    const key = entry.item.path;
-                    if (selectedPaths.has(key)) return;
-                    selected.push(entry);
-                    selectedPaths.add(key);
-                }
-
-                scored.forEach(function (entry) {
-                    if (selected.length >= 6) return;
-                    if (entry.score > 0) {
-                        tryPush(entry);
-                    }
-                });
-
-                if (selected.length < 4 && currentCategory) {
-                    scored.forEach(function (entry) {
-                        if (selected.length >= 6) return;
-                        if (entry.item.category === currentCategory) {
-                            tryPush(entry);
-                        }
-                    });
-                }
-
-                if (selected.length < 4) {
-                    scored.forEach(function (entry) {
-                        if (selected.length >= 6) return;
-                        tryPush(entry);
-                    });
-                }
-
-                const lines = [];
-                lines.push('> AI 生成内容可能不准确，请以教程原文为准。');
-                lines.push('');
-                lines.push('## 推荐阅读路线（本地推荐）');
-                if (tokens.length > 0) {
-                    lines.push(`关键词匹配：${tokens.join('、')}`);
-                } else {
-                    lines.push('未识别到明确关键词，已按当前文章和教程顺序推荐。');
-                }
-                lines.push('');
-
-                selected.forEach(function (entry, index) {
-                    const item = entry.item;
-                    let reason = '';
-
-                    if (entry.matchedTokens.length > 0) {
-                        reason = `匹配关键词：${entry.matchedTokens.slice(0, 3).join('、')}`;
-                    } else if (currentCategory && item.category === currentCategory) {
-                        reason = `与当前文章同属分类：${item.category}`;
-                    } else if (item.description) {
-                        reason = item.description;
-                    } else {
-                        reason = `教程分类：${item.category}`;
-                    }
-
-                    lines.push(`${index + 1}. [${item.title}](${item.href}) - ${reason}`);
-                });
-
-                lines.push('');
-                lines.push('说明：以上为本地目录推荐，不会调用 AI 接口。');
-                return lines.join('\n');
-            }
-
-            function buildAiSystemPrompt(userPrompt) {
-                const article = getCurrentArticleContextForAi(2600);
-                const promptText = String(userPrompt || '').trim();
-
-                return [
-                    '你是 tModLoader 教程页面内的 AI 助手。',
-                    '第一行必须原样输出：> AI 生成内容可能不准确，请以教程原文为准。',
-                    '严格要求：',
-                    '1. 只基于当前文章内容回答简单问题，不得编造事实。',
-                    '2. 回答先给结论，再给 2-5 条简短步骤。',
-                    '3. 不要输出长篇阅读索引；当用户要阅读路线时，由前端本地推荐处理。',
-                    '4. 信息不足时，请明确写“我不确定”，并提醒以教程原文为准。',
-                    '',
-                    `当前文章标题: ${article.title}`,
-                    `当前文章路径: ${article.path}`,
-                    `当前文章内容摘录:\n${article.text}`,
-                    '',
-                    `用户问题: ${promptText}`
-                ].join('\n');
-            }
-
-            function shouldUseIndexSuggestionMode(prompt) {
-                const text = String(prompt || '').trim().toLowerCase();
-                if (!text) return false;
-                return text.includes('索引')
-                    || text.includes('目录')
-                    || text.includes('文章推荐')
-                    || text.includes('阅读建议')
-                    || text.includes('从哪开始')
-                    || text.includes('教程路线')
-                    || text.includes('学习路线')
-                    || text.includes('先学什么')
-                    || text.includes('推荐我读');
-            }
-
-            function formatCooldownSeconds(totalSeconds) {
-                const seconds = Math.max(0, Math.ceil(Number(totalSeconds || 0)));
-                const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
-                const ss = String(seconds % 60).padStart(2, '0');
-                return `${mm}:${ss}`;
-            }
-
-            function getAiCooldownRemainingSeconds() {
-                const diff = Number(state.aiCooldownUntil || 0) - Date.now();
-                return Math.max(0, Math.ceil(diff / 1000));
-            }
-
-            function persistAiCooldown() {
-                try {
-                    if (state.aiCooldownUntil > Date.now()) {
-                        localStorage.setItem(VIEWER_AI_COOLDOWN_STORAGE_KEY, String(state.aiCooldownUntil));
-                    } else {
-                        localStorage.removeItem(VIEWER_AI_COOLDOWN_STORAGE_KEY);
-                    }
-                } catch (_) {
-                    // ignore local storage failures
-                }
-            }
-
-            function stopAiCooldownTimer() {
-                if (!cooldownTimer) return;
-                clearInterval(cooldownTimer);
-                cooldownTimer = 0;
-            }
-
-            function setAiSendBusy(isBusy) {
-                state.aiBusy = !!isBusy;
-                if (!dom.send) return;
-                dom.send.textContent = isBusy ? '发送中...' : '发送 AI 对话';
-                if (!isBusy) {
-                    updateAiCooldownUi();
-                    return;
-                }
-                dom.send.disabled = true;
-            }
-
-            function updateAiCooldownUi() {
-                const remaining = getAiCooldownRemainingSeconds();
-                const hasCooldown = remaining > 0;
-                const isLoggedIn = !!state.authToken;
-
-                if (dom.cooldown) {
-                    dom.cooldown.textContent = hasCooldown ? `冷却中 ${formatCooldownSeconds(remaining)}` : '可发送';
-                    dom.cooldown.style.color = hasCooldown ? 'var(--text-secondary)' : 'var(--text-color)';
-                }
-
-                if (dom.send && !state.aiBusy) {
-                    dom.send.disabled = !isLoggedIn || hasCooldown;
-                }
-
-                if (!hasCooldown) {
-                    stopAiCooldownTimer();
-                    state.aiCooldownUntil = 0;
-                }
-
-                persistAiCooldown();
-            }
-
-            function startAiCooldown(seconds) {
-                const ttl = Math.max(1, Math.ceil(Number(seconds || 0)));
-                state.aiCooldownUntil = Date.now() + ttl * 1000;
-                persistAiCooldown();
-                stopAiCooldownTimer();
-                updateAiCooldownUi();
-
-                cooldownTimer = setInterval(function () {
-                    updateAiCooldownUi();
-                }, 1000);
-            }
-
-            function restoreAiCooldownFromStorage() {
-                try {
-                    const saved = Number(localStorage.getItem(VIEWER_AI_COOLDOWN_STORAGE_KEY) || 0);
-                    if (saved > Date.now()) {
-                        state.aiCooldownUntil = saved;
-                        updateAiCooldownUi();
-                        cooldownTimer = setInterval(function () {
-                            updateAiCooldownUi();
-                        }, 1000);
-                        return;
-                    }
-                } catch (_) {
-                    // ignore local storage failures
-                }
-
-                state.aiCooldownUntil = 0;
-                updateAiCooldownUi();
-            }
-
-            function loadAuthSession() {
-                try {
-                    state.authToken = String(sessionStorage.getItem(VIEWER_AUTH_TOKEN_KEY) || '').trim();
-                    state.githubUser = String(sessionStorage.getItem(VIEWER_AUTH_USER_KEY) || '').trim();
-                } catch (_) {
-                    state.authToken = '';
-                    state.githubUser = '';
-                }
-            }
-
-            function persistAuthSession() {
-                try {
-                    if (state.authToken) {
-                        sessionStorage.setItem(VIEWER_AUTH_TOKEN_KEY, state.authToken);
-                    } else {
-                        sessionStorage.removeItem(VIEWER_AUTH_TOKEN_KEY);
-                    }
-
-                    if (state.githubUser) {
-                        sessionStorage.setItem(VIEWER_AUTH_USER_KEY, state.githubUser);
-                    } else {
-                        sessionStorage.removeItem(VIEWER_AUTH_USER_KEY);
-                    }
-                } catch (_) {
-                    // ignore session storage failures
-                }
-            }
-
-            function clearAuthSession() {
-                state.authToken = '';
-                state.githubUser = '';
-                persistAuthSession();
-            }
-
-            function updateAuthUi() {
-                const isLoggedIn = !!state.authToken;
-                const userText = state.githubUser ? `@${state.githubUser}` : '已登录';
-
-                if (dom.authStatus) {
-                    dom.authStatus.textContent = isLoggedIn ? userText : '未登录';
-                    dom.authStatus.style.color = isLoggedIn ? 'var(--text-color)' : 'var(--text-secondary)';
-                }
-
-                if (dom.login) {
-                    dom.login.textContent = isLoggedIn ? '切换 GitHub 账号' : 'GitHub 登录';
-                }
-
-                if (dom.logout) {
-                    dom.logout.disabled = !isLoggedIn;
-                }
-
-                updateAiCooldownUi();
-            }
-
-            function authLoginUrl() {
-                try {
-                    const loginUrl = new URL('/auth/github/login', VIEWER_AUTH_WORKER_ORIGIN);
-                    const returnTo = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-                    loginUrl.searchParams.set('return_to', returnTo);
-                    return loginUrl.toString();
-                } catch (_) {
-                    return '';
-                }
-            }
-
-            function authMeUrl() {
-                try {
-                    return new URL('/auth/me', VIEWER_AUTH_WORKER_ORIGIN).toString();
-                } catch (_) {
-                    return '';
-                }
-            }
-
-            function consumeOauthResultFromHash() {
-                const hash = String(window.location.hash || '').replace(/^#/, '');
-                if (!hash) return false;
-
-                const hasOauthToken = /(^|&)oauth_token=/.test(hash);
-                const hasOauthError = /(^|&)oauth_error=/.test(hash);
-                if (!hasOauthToken && !hasOauthError) return false;
-
-                const params = new URLSearchParams(hash);
-                const oauthToken = String(params.get('oauth_token') || '').trim();
-                const githubUser = String(params.get('github_user') || '').trim();
-                const oauthError = String(params.get('oauth_error') || '').trim();
-
-                if (oauthToken) {
-                    state.authToken = oauthToken;
-                    state.githubUser = githubUser;
-                    persistAuthSession();
-                    updateAuthUi();
-                    setAiOutput(`GitHub 登录成功${githubUser ? `：@${githubUser}` : ''}`);
-                } else {
-                    clearAuthSession();
-                    updateAuthUi();
-                    setAiOutput(`GitHub 登录失败：${oauthError || '未知错误'}`);
-                }
-
-                const cleanUrl = `${window.location.pathname}${window.location.search}`;
-                window.history.replaceState(null, '', cleanUrl);
-                return true;
-            }
-
-            async function verifyAuthSession() {
-                if (!state.authToken) {
-                    updateAuthUi();
-                    return;
-                }
-
-                const meUrl = authMeUrl();
-                if (!meUrl) {
-                    clearAuthSession();
-                    updateAuthUi();
-                    setAiOutput('Worker 地址无效，无法验证 GitHub 登录状态');
-                    return;
-                }
-
-                try {
-                    const response = await fetch(meUrl, {
-                        method: 'GET',
-                        headers: {
-                            'authorization': `Bearer ${state.authToken}`
-                        }
-                    });
-
-                    const responseText = await response.text();
-                    let responseData = null;
-                    try {
-                        responseData = responseText ? JSON.parse(responseText) : null;
-                    } catch (_) {
-                        responseData = null;
-                    }
-
-                    if (response.status === 401) {
-                        clearAuthSession();
-                        updateAuthUi();
-                        setAiOutput('GitHub 登录已失效，请重新登录');
-                        return;
-                    }
-
-                    if (!response.ok || !responseData || responseData.ok !== true || !responseData.user) {
-                        updateAuthUi();
-                        setAiOutput(`验证登录状态失败（HTTP ${response.status}），已保留登录态`);
-                        return;
-                    }
-
-                    state.githubUser = String(responseData.user || '').trim();
-                    persistAuthSession();
-                    updateAuthUi();
-                } catch (err) {
-                    setAiOutput(`验证登录状态失败：${err && err.message ? err.message : String(err)}`);
-                }
-            }
-
-            async function checkAuthTokenAgainstWorker(authToken) {
-                const token = String(authToken || '').trim();
-                const meUrl = authMeUrl();
-
-                if (!token || !meUrl) {
-                    return {
-                        ok: false,
-                        status: 0,
-                        user: ''
-                    };
-                }
-
-                try {
-                    const response = await fetch(meUrl, {
-                        method: 'GET',
-                        headers: {
-                            'authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    const responseText = await response.text();
-                    let responseData = null;
-                    try {
-                        responseData = responseText ? JSON.parse(responseText) : null;
-                    } catch (_) {
-                        responseData = null;
-                    }
-
-                    if (!response.ok || !responseData || responseData.ok !== true || !responseData.user) {
-                        return {
-                            ok: false,
-                            status: response.status,
-                            user: ''
-                        };
-                    }
-
-                    return {
-                        ok: true,
-                        status: response.status,
-                        user: String(responseData.user || '').trim()
-                    };
-                } catch (_) {
-                    return {
-                        ok: false,
-                        status: 0,
-                        user: ''
-                    };
-                }
-            }
-
-            function toggleAiPanel(forceOpen) {
-                const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !!dom.panel.hidden;
-                dom.panel.hidden = !shouldOpen;
-                dom.fab.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-                updatePanelAlignByFabPosition();
-                const left = parsePx(dom.root.style.left);
-                const top = parsePx(dom.root.style.top);
-                if (left != null && top != null) {
-                    snapFabToEdge(left, top, false);
-                }
-                if (shouldOpen && dom.input) {
-                    dom.input.focus();
-                }
-            }
-
-            async function submitViewerAiChat() {
-                const apiUrl = normalizeAiApiUrl(dom.endpoint ? dom.endpoint.value : VIEWER_AI_ENDPOINT);
-                const authToken = String(state.authToken || '').trim();
-                const prompt = String(dom.input ? dom.input.value : '').trim();
-
-                if (!prompt) {
-                    setAiOutput('请输入问题后再发送 AI 对话');
-                    if (dom.input) dom.input.focus();
-                    return;
-                }
-
-                const preferIndexSuggestions = shouldUseIndexSuggestionMode(prompt);
-                if (preferIndexSuggestions) {
-                    setAiOutput(buildLocalIndexRecommendationMarkdown(prompt), { markdown: true });
-                    return;
-                }
-
-                if (!authToken) {
-                    setAiOutput('请先点击“GitHub 登录”后再使用 AI 对话');
-                    if (dom.login) dom.login.focus();
-                    updateAiCooldownUi();
-                    return;
-                }
-
-                if (!apiUrl || /REPLACE_WITH_PROJECT_REF\.supabase\.co/i.test(apiUrl)) {
-                    setAiOutput('请先把 AI API 地址改成你的 Supabase ai-chat 地址');
-                    if (dom.endpoint) dom.endpoint.focus();
-                    return;
-                }
-
-                const remaining = getAiCooldownRemainingSeconds();
-                if (remaining > 0) {
-                    setAiOutput(`AI 对话冷却中，请等待 ${formatCooldownSeconds(remaining)}`);
-                    updateAiCooldownUi();
-                    return;
-                }
-                if (dom.endpoint) {
-                    dom.endpoint.value = apiUrl;
-                }
-                setAiSendBusy(true);
-                setAiOutput('AI 正在思考，请稍候...');
-
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'content-type': 'application/json',
-                            'authorization': `Bearer ${authToken}`
-                        },
-                        body: JSON.stringify({
-                            prompt: buildAiSystemPrompt(prompt)
-                        })
-                    });
-
-                    const responseText = await response.text();
-                    let responseData = null;
-                    try {
-                        responseData = responseText ? JSON.parse(responseText) : null;
-                    } catch (_) {
-                        responseData = null;
-                    }
-
-                    if (response.status === 401) {
-                        const authCheck = await checkAuthTokenAgainstWorker(authToken);
-                        if (authCheck.ok) {
-                            if (authCheck.user) {
-                                state.githubUser = authCheck.user;
-                                persistAuthSession();
-                            }
-                            updateAuthUi();
-                            throw new Error('AI 服务认证配置不一致：请检查 Supabase 的 PR_AUTH_ME_URL 与 Worker 会话签名配置');
-                        }
-
-                        clearAuthSession();
-                        updateAuthUi();
-                        throw new Error('GitHub 登录已过期，请重新登录');
-                    }
-
-                    if (response.status === 429) {
-                        const retryAfter = responseData && responseData.retry_after_sec
-                            ? Number(responseData.retry_after_sec)
-                            : VIEWER_AI_COOLDOWN_SECONDS;
-                        startAiCooldown(retryAfter);
-                        throw new Error(`请求过于频繁，请等待 ${formatCooldownSeconds(retryAfter)}`);
-                    }
-
-                    if (!response.ok) {
-                        const errMessage = responseData && responseData.error
-                            ? String(responseData.error)
-                            : `HTTP ${response.status}`;
-                        throw new Error(errMessage);
-                    }
-
-                    const outputText = responseData && typeof responseData.text === 'string'
-                        ? responseData.text
-                        : (responseText || '').trim();
-
-                    if (!outputText) {
-                        throw new Error('AI 返回为空，请稍后重试');
-                    }
-
-                    setAiOutput(outputText, { markdown: true });
-                    startAiCooldown(VIEWER_AI_COOLDOWN_SECONDS);
-                } catch (err) {
-                    setAiOutput(`请求失败：${err && err.message ? err.message : String(err)}`);
-                } finally {
-                    setAiSendBusy(false);
-                    updateAiCooldownUi();
-                }
-            }
-
-            function setupEvents() {
-                if (dom.fab) {
-                    dom.fab.addEventListener('click', function () {
-                        if (state.fabDragging) return;
-                        toggleAiPanel();
-                    });
-                }
-
-                if (dom.close) {
-                    dom.close.addEventListener('click', function () {
-                        toggleAiPanel(false);
-                    });
-                }
-
-                if (dom.login) {
-                    dom.login.addEventListener('click', function () {
-                        const loginUrl = authLoginUrl();
-                        if (!loginUrl) {
-                            setAiOutput('无法生成 GitHub 登录地址，请检查 Worker 配置');
-                            return;
-                        }
-                        window.location.href = loginUrl;
-                    });
-                }
-
-                if (dom.logout) {
-                    dom.logout.addEventListener('click', function () {
-                        clearAuthSession();
-                        updateAuthUi();
-                        setAiOutput('已退出 GitHub 登录状态');
-                    });
-                }
-
-                if (dom.endpoint) {
-                    dom.endpoint.addEventListener('blur', function () {
-                        dom.endpoint.value = normalizeAiApiUrl(dom.endpoint.value);
-                    });
-                }
-
-                if (dom.send) {
-                    dom.send.addEventListener('click', submitViewerAiChat);
-                }
-
-                if (dom.input) {
-                    dom.input.addEventListener('keydown', function (event) {
-                        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-                            event.preventDefault();
-                            submitViewerAiChat();
-                        }
-                    });
-                }
-            }
-
-            if (isStudioEmbedModeEnabled()) {
-                dom.root.hidden = true;
-                return;
-            }
-
-            dom.root.hidden = false;
-            setupFabDrag();
-            restoreFabPosition();
-
-            window.addEventListener('resize', function () {
-                const left = parsePx(dom.root.style.left);
-                const top = parsePx(dom.root.style.top);
-                if (left != null && top != null) {
-                    snapFabToEdge(left, top, false);
-                    return;
-                }
-
-                setFabDefaultPosition();
-            });
-
-            if (dom.endpoint) {
-                dom.endpoint.value = normalizeAiApiUrl(VIEWER_AI_ENDPOINT);
-            }
-
-            loadAuthSession();
-            consumeOauthResultFromHash();
-            updateAuthUi();
-            restoreAiCooldownFromStorage();
-            setupEvents();
-            verifyAuthSession();
-        })();
     </script>
     <script>
         window.__disableSharedViewerBootstrap = true;

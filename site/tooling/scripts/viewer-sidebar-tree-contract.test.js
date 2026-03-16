@@ -28,9 +28,8 @@ test('viewer mobile navigation keeps dedicated toggle and route-safe close hooks
     assert.match(html, /window\.addEventListener\('hashchange',\s*handleRouteOrHashChange\)/);
 });
 
-test('viewer AI floating controls prefer scrolling on touch devices', () => {
+test('viewer no longer contains AI chat mount or viewer-ai styles', () => {
     const html = fs.readFileSync(viewerPath, 'utf8');
-    assert.match(html, /\.viewer-ai-fab-wrap\s*\{[^}]*touch-action:\s*pan-y;[^}]*\}/s);
-    assert.match(html, /\.viewer-ai-fab-wrap\.viewer-ai-fab-wrap--dragging\s*\{[^}]*touch-action:\s*none;[^}]*\}/s);
-    assert.match(html, /\.viewer-ai-fab\s*\{[^}]*touch-action:\s*manipulation;[^}]*\}/s);
+    assert.doesNotMatch(html, /id="viewer-ai-root"/);
+    assert.doesNotMatch(html, /\.viewer-ai-/);
 });

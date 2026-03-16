@@ -102,6 +102,15 @@ const dom = {
     editor: document.getElementById('editor'),
     markdownPreviewPane: document.getElementById('markdown-preview-pane'),
     markdownPreviewFrame: document.getElementById('markdown-preview-frame'),
+    markdownWysiwygToolbar: document.getElementById('markdown-wysiwyg-toolbar'),
+    markdownWysiwygSelection: document.getElementById('markdown-wysiwyg-selection'),
+    btnMdWysBold: document.getElementById('btn-md-wys-bold'),
+    btnMdWysItalic: document.getElementById('btn-md-wys-italic'),
+    btnMdWysLink: document.getElementById('btn-md-wys-link'),
+    btnMdWysJumpSource: document.getElementById('btn-md-wys-jump-source'),
+    btnMdWysMoveUp: document.getElementById('btn-md-wys-move-up'),
+    btnMdWysMoveDown: document.getElementById('btn-md-wys-move-down'),
+    btnMdWysDelete: document.getElementById('btn-md-wys-delete'),
     markdownVisualCanvas: document.getElementById('markdown-visual-canvas'),
     markdownVisualInspector: document.getElementById('markdown-visual-inspector'),
     markdownVisualSelectedType: document.getElementById('markdown-visual-selected-type'),
@@ -277,17 +286,30 @@ const dom = {
     markdownMetaFields: Array.from(document.querySelectorAll('[data-meta-field]')),
     quickCreateModal: document.getElementById('quick-create-modal'),
     quickCreateBackdrop: document.getElementById('quick-create-backdrop'),
+    quickCreateDialog: document.querySelector('#quick-create-modal .quick-create-dialog'),
     btnQuickCreateClose: document.getElementById('btn-quick-create-close'),
     btnQuickCreateSubmit: document.getElementById('btn-quick-create-submit'),
     quickCreateType: document.getElementById('quick-create-type'),
     quickCreateDirectory: document.getElementById('quick-create-directory'),
     quickCreateName: document.getElementById('quick-create-name'),
     quickCreateHint: document.getElementById('quick-create-hint'),
+    markdownPathPickerModal: document.getElementById('markdown-path-picker-modal'),
+    markdownPathPickerBackdrop: document.getElementById('markdown-path-picker-backdrop'),
+    btnMarkdownPathPickerClose: document.getElementById('btn-markdown-path-picker-close'),
+    btnMarkdownPathPickerCancel: document.getElementById('btn-markdown-path-picker-cancel'),
+    markdownPathPickerTitle: document.getElementById('markdown-path-picker-title'),
+    markdownPathPickerFilter: document.getElementById('markdown-path-picker-filter'),
+    markdownPathPickerTip: document.getElementById('markdown-path-picker-tip'),
+    markdownPathPickerList: document.getElementById('markdown-path-picker-list'),
     shaderSlotPickerModal: document.getElementById('shader-slot-picker-modal'),
     shaderSlotPickerBackdrop: document.getElementById('shader-slot-picker-backdrop'),
     shaderSlotPickerList: document.getElementById('shader-slot-picker-list'),
     shaderSlotPickerTip: document.getElementById('shader-slot-picker-tip'),
-    btnShaderSlotPickerCancel: document.getElementById('btn-shader-slot-picker-cancel')
+    btnShaderSlotPickerCancel: document.getElementById('btn-shader-slot-picker-cancel'),
+    mdAnimationInsertKind: document.getElementById('md-animation-insert-kind'),
+    btnMdInsertAnimation: document.getElementById('btn-md-insert-animation'),
+    mdQuizInsertKind: document.getElementById('md-quiz-insert-kind'),
+    btnMdInsertQuiz: document.getElementById('btn-md-insert-quiz')
 };
 
 const state = {
@@ -367,7 +389,13 @@ const state = {
         blocks: [],
         selectedBlockId: '',
         selectedBlockIndex: -1,
-        refreshTimer: 0
+        refreshTimer: 0,
+        previewFrameUrl: '',
+        frameReady: false,
+        bridgeReady: false,
+        selectedDomBlock: null,
+        bridgeSyncTimer: 0,
+        committing: false
     },
     markdownMeta: {
         syncing: false,
@@ -398,7 +426,14 @@ const state = {
     },
     quickCreate: {
         pendingBaseDir: '',
-        pendingType: 'markdown'
+        pendingType: 'markdown',
+        backdropMonitorRaf: 0
+    },
+    markdownPathPicker: {
+        open: false,
+        resolver: null,
+        mode: '',
+        markdownFilePath: ''
     },
     shaderSlotPicker: {
         open: false,
@@ -736,9 +771,32 @@ const QUICK_CREATE_TYPE_META = Object.freeze({
     video: Object.freeze({ ext: '.mp4', defaultFileName: 'video.mp4' })
 });
 const MARKDOWN_VISUAL_BLOCK_READONLY_TYPES = new Set(['code', 'table', 'front-matter']);
+const MARKDOWN_WYSIWYG_EDITABLE_BLOCK_TYPES = new Set(['heading', 'paragraph', 'list', 'quote']);
 const MARKDOWN_CALL_OUT_LEVELS = Object.freeze(['NOTE', 'TIP', 'IMPORTANT', 'WARNING', 'CAUTION']);
 const MARKDOWN_VISUAL_IMAGE_LINE_RE = /^\s*!\[([^\]]*)\]\(([^)\n\r]+)\)\s*$/;
 const MARKDOWN_VISUAL_INLINE_LINK_RE = /\[([^\]\n\r]+)\]\(([^)\n\r]+)\)/g;
+const MARKDOWN_PATH_PICKER_MODE_META = Object.freeze({
+    image: Object.freeze({
+        title: '选择图片文件',
+        tip: '选择后会插入 Markdown 图片引用',
+        allowMode: (mode) => mode === 'image'
+    }),
+    'cs-embed': Object.freeze({
+        title: '选择 C# 文件',
+        tip: '选择后会插入 cs: 引用，类型锚点可后续再补充',
+        allowMode: (mode) => mode === 'csharp'
+    }),
+    anim: Object.freeze({
+        title: '选择动画文件',
+        tip: '选择后会插入 anims: 引用',
+        allowMode: (mode, pathValue) => mode === 'animts' || /\.anim\.ts$/i.test(String(pathValue || ''))
+    }),
+    'fx-embed': Object.freeze({
+        title: '选择 FX 文件',
+        tip: '选择后会插入 fx: 引用',
+        allowMode: (mode) => mode === 'shaderfx'
+    })
+});
 const MARKDOWN_VISUAL_CALLOUT_LEVEL_MAP = Object.freeze({
     NOTE: Object.freeze({ className: 'note', title: '提示' }),
     TIP: Object.freeze({ className: 'tip', title: '技巧' }),
@@ -5370,6 +5428,9 @@ function setShaderPreviewModalOpen(open, options) {
 
 function setMarkdownPreviewMode(mode) {
     const next = mode === 'preview' ? 'preview' : 'edit';
+    if (next !== 'preview') {
+        commitSelectedMarkdownDomBlock('switch-mode');
+    }
     state.ui.markdownPreviewMode = next;
     const showingPreview = next === 'preview' && activeFileMode() === 'markdown';
     if (dom.editor) dom.editor.hidden = showingPreview;
@@ -5382,7 +5443,9 @@ function setMarkdownPreviewMode(mode) {
     } else {
         state.markdownVisual.selectedBlockId = '';
         state.markdownVisual.selectedBlockIndex = -1;
+        state.markdownVisual.selectedDomBlock = null;
         updateMarkdownVisualInspector(null);
+        updateMarkdownWysiwygSelectionUi(null);
     }
     if (state.editor) {
         requestAnimationFrame(() => {
@@ -5493,7 +5556,32 @@ function setQuickCreateModalOpen(open) {
     if (dom.quickCreateModal) {
         dom.quickCreateModal.hidden = !shouldOpen;
     }
+    if (!shouldOpen) {
+        if (state.quickCreate.backdropMonitorRaf) {
+            cancelAnimationFrame(state.quickCreate.backdropMonitorRaf);
+            state.quickCreate.backdropMonitorRaf = 0;
+        }
+        if (dom.quickCreateBackdrop) {
+            dom.quickCreateBackdrop.classList.remove('quick-create-backdrop-transparent');
+        }
+    }
     if (!shouldOpen) return;
+
+    const monitorBackdrop = () => {
+        if (!state.ui.quickCreateOpen) return;
+        if (!dom.quickCreateDialog || !dom.quickCreateBackdrop) return;
+        const rect = dom.quickCreateDialog.getBoundingClientRect();
+        const viewportW = window.innerWidth || document.documentElement.clientWidth || 0;
+        const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+        const outOfViewport = rect.right <= 0 || rect.left >= viewportW || rect.bottom <= 0 || rect.top >= viewportH;
+        dom.quickCreateBackdrop.classList.toggle('quick-create-backdrop-transparent', outOfViewport);
+        state.quickCreate.backdropMonitorRaf = requestAnimationFrame(monitorBackdrop);
+    };
+    if (state.quickCreate.backdropMonitorRaf) {
+        cancelAnimationFrame(state.quickCreate.backdropMonitorRaf);
+    }
+    state.quickCreate.backdropMonitorRaf = requestAnimationFrame(monitorBackdrop);
+
     requestAnimationFrame(() => {
         if (dom.quickCreateName) {
             dom.quickCreateName.focus();
@@ -6033,6 +6121,485 @@ function summarizeVisualBlockText(block) {
     return `${text.slice(0, 220)}...`;
 }
 
+function readMarkdownDomBlockIntAttr(element, key) {
+    const safeElement = element && typeof element.getAttribute === 'function' ? element : null;
+    if (!safeElement) return 0;
+    const value = Number.parseInt(String(safeElement.getAttribute(key) || '').trim(), 10);
+    if (!Number.isInteger(value) || value <= 0) return 0;
+    return value;
+}
+
+function getMarkdownPreviewFrameDocument() {
+    if (!dom.markdownPreviewFrame) return null;
+    return dom.markdownPreviewFrame.contentDocument || null;
+}
+
+function getMarkdownPreviewContentRoot() {
+    const doc = getMarkdownPreviewFrameDocument();
+    if (!doc) return null;
+    return doc.getElementById('markdown-content');
+}
+
+function markdownDomBlockInfo(element) {
+    const safeElement = element && typeof element.getAttribute === 'function' ? element : null;
+    if (!safeElement) return null;
+    const startLine = readMarkdownDomBlockIntAttr(safeElement, 'data-src-start');
+    const endLine = readMarkdownDomBlockIntAttr(safeElement, 'data-src-end');
+    if (!startLine || !endLine || endLine <= startLine) return null;
+    const kind = String(safeElement.getAttribute('data-block-kind') || '').trim().toLowerCase();
+    const editable = MARKDOWN_WYSIWYG_EDITABLE_BLOCK_TYPES.has(kind);
+    return {
+        element: safeElement,
+        startLine,
+        endLine,
+        kind,
+        editable
+    };
+}
+
+function markdownDomBlockLabel(info) {
+    const safe = info && typeof info === 'object' ? info : null;
+    if (!safe) return '未选中块';
+    const label = markdownVisualBlockTypeLabel(safe.kind || 'paragraph');
+    return `${label} · Ln ${safe.startLine}`;
+}
+
+function updateMarkdownWysiwygSelectionUi(element) {
+    const info = markdownDomBlockInfo(element);
+    if (dom.markdownWysiwygSelection) {
+        dom.markdownWysiwygSelection.textContent = markdownDomBlockLabel(info);
+    }
+    const hasBlock = !!info;
+    const editable = hasBlock && !!info.editable;
+    if (dom.btnMdWysBold) dom.btnMdWysBold.disabled = !editable;
+    if (dom.btnMdWysItalic) dom.btnMdWysItalic.disabled = !editable;
+    if (dom.btnMdWysLink) dom.btnMdWysLink.disabled = !editable;
+    if (dom.btnMdWysJumpSource) dom.btnMdWysJumpSource.disabled = !hasBlock;
+    if (dom.btnMdWysMoveUp) dom.btnMdWysMoveUp.disabled = !hasBlock;
+    if (dom.btnMdWysMoveDown) dom.btnMdWysMoveDown.disabled = !hasBlock;
+    if (dom.btnMdWysDelete) dom.btnMdWysDelete.disabled = !hasBlock;
+}
+
+function clearMarkdownWysiwygSelection() {
+    const root = getMarkdownPreviewContentRoot();
+    if (root) {
+        root.querySelectorAll('.tml-ide-md-block.is-selected').forEach((node) => {
+            node.classList.remove('is-selected');
+        });
+    }
+    state.markdownVisual.selectedDomBlock = null;
+    updateMarkdownWysiwygSelectionUi(null);
+}
+
+function selectMarkdownWysiwygBlock(element, options) {
+    const opts = options && typeof options === 'object' ? options : {};
+    const info = markdownDomBlockInfo(element);
+    if (!info) {
+        clearMarkdownWysiwygSelection();
+        return;
+    }
+    const root = getMarkdownPreviewContentRoot();
+    if (root) {
+        root.querySelectorAll('.tml-ide-md-block.is-selected').forEach((node) => {
+            if (node !== info.element) {
+                node.classList.remove('is-selected');
+            }
+        });
+    }
+    info.element.classList.add('is-selected');
+    state.markdownVisual.selectedDomBlock = info.element;
+    updateMarkdownWysiwygSelectionUi(info.element);
+    if (opts.focus === true && info.editable) {
+        info.element.focus();
+    }
+}
+
+function ensureMarkdownWysiwygFrameStyle() {
+    const doc = getMarkdownPreviewFrameDocument();
+    if (!doc || !doc.head) return;
+    if (doc.getElementById('tml-ide-markdown-wysiwyg-style')) return;
+    const style = doc.createElement('style');
+    style.id = 'tml-ide-markdown-wysiwyg-style';
+    style.textContent = [
+        '.tml-ide-md-block{position:relative;outline:1px dashed transparent;outline-offset:2px;transition:outline-color .12s ease,background .12s ease;}',
+        '.tml-ide-md-block.tml-ide-md-editable{cursor:text;}',
+        '.tml-ide-md-block.tml-ide-md-readonly{cursor:pointer;}',
+        '.tml-ide-md-block.tml-ide-md-editable:hover{outline-color:rgba(77,160,255,.58);background:rgba(51,98,164,.10);}',
+        '.tml-ide-md-block.tml-ide-md-readonly:hover{outline-color:rgba(255,176,77,.58);background:rgba(122,88,33,.12);}',
+        '.tml-ide-md-block.is-selected{outline-color:#35a4ff !important;background:rgba(21,73,120,.18) !important;}',
+        '.tml-ide-md-block[contenteditable=\"true\"]:focus{outline-color:#35a4ff !important;background:rgba(21,73,120,.2) !important;}'
+    ].join('');
+    doc.head.appendChild(style);
+}
+
+function escapeInlineCodeText(text) {
+    return String(text || '').replace(/`/g, '\\`');
+}
+
+function serializeMarkdownInlineNode(node) {
+    const safeNode = node || null;
+    if (!safeNode) return '';
+    if (safeNode.nodeType === 3) {
+        return String(safeNode.textContent || '').replace(/\u00a0/g, ' ');
+    }
+    if (safeNode.nodeType !== 1) return '';
+
+    const tag = String(safeNode.tagName || '').toUpperCase();
+    if (tag === 'BR') return '\n';
+    const children = Array.from(safeNode.childNodes || []).map((child) => serializeMarkdownInlineNode(child)).join('');
+    if (tag === 'STRONG' || tag === 'B') return `**${children.trim()}**`;
+    if (tag === 'EM' || tag === 'I') return `*${children.trim()}*`;
+    if (tag === 'CODE') return `\`${escapeInlineCodeText(String(safeNode.textContent || ''))}\``;
+    if (tag === 'A') {
+        const href = String(safeNode.getAttribute('href') || '').trim();
+        const label = children.trim() || href || '链接';
+        return href ? `[${label}](${href})` : label;
+    }
+    if (tag === 'DIV' || tag === 'P') {
+        return `${children}\n`;
+    }
+    return children;
+}
+
+function serializeMarkdownInlineChildren(element) {
+    return Array.from(element && element.childNodes || [])
+        .map((node) => serializeMarkdownInlineNode(node))
+        .join('')
+        .replace(/\r/g, '')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
+function serializeEditableDomBlockToMarkdown(element, kind) {
+    const safeKind = String(kind || '').trim().toLowerCase();
+    const safeElement = element && typeof element.tagName === 'string' ? element : null;
+    if (!safeElement) return '';
+
+    if (safeKind === 'heading') {
+        const level = Number.parseInt(String(safeElement.tagName || '').replace(/^H/i, ''), 10);
+        const safeLevel = Number.isInteger(level) ? Math.max(1, Math.min(6, level)) : 2;
+        const text = serializeMarkdownInlineChildren(safeElement) || '小节标题';
+        return `${'#'.repeat(safeLevel)} ${text}`;
+    }
+
+    if (safeKind === 'list') {
+        const ordered = String(safeElement.tagName || '').toUpperCase() === 'OL';
+        const items = Array.from(safeElement.querySelectorAll(':scope > li'));
+        const rows = (items.length > 0 ? items : [safeElement])
+            .map((item, index) => {
+                const text = serializeMarkdownInlineChildren(item).replace(/\n+/g, ' ').trim() || '列表项';
+                return ordered ? `${index + 1}. ${text}` : `- ${text}`;
+            });
+        return rows.join('\n');
+    }
+
+    if (safeKind === 'quote') {
+        const rawLines = String(safeElement.innerText || '')
+            .replace(/\r/g, '')
+            .split('\n')
+            .map((line) => String(line || '').trimRight());
+        const lines = rawLines.filter((line) => line.trim().length > 0);
+        const normalized = lines.length > 0 ? lines : ['引用内容'];
+        return normalized.map((line) => `> ${line}`).join('\n');
+    }
+
+    const paragraph = serializeMarkdownInlineChildren(safeElement);
+    return paragraph || '段落内容';
+}
+
+function replaceMarkdownBlockRange(startLine, endLine, replacementText) {
+    const ctx = getActiveMarkdownContext();
+    if (!ctx) return false;
+    const modelText = String(ctx.model.getValue() || '').replace(/\r\n/g, '\n');
+    const lines = modelText.split('\n');
+    const startIndex = Math.max(0, Number(startLine || 1) - 1);
+    const endIndex = Math.max(startIndex + 1, Number(endLine || (startLine + 1)) - 1);
+    const replacementLines = String(replacementText || '').replace(/\r\n/g, '\n').split('\n');
+    const currentChunk = lines.slice(startIndex, endIndex).join('\n');
+    const nextChunk = replacementLines.join('\n');
+    if (currentChunk === nextChunk) {
+        return false;
+    }
+    lines.splice(startIndex, endIndex - startIndex, ...replacementLines);
+    ctx.model.setValue(lines.join('\n'));
+    return true;
+}
+
+function commitMarkdownDomBlock(element, reason) {
+    void reason;
+    const info = markdownDomBlockInfo(element);
+    if (!info || !info.editable) return false;
+    if (state.markdownVisual.committing) return false;
+    const nextMarkdown = serializeEditableDomBlockToMarkdown(info.element, info.kind);
+    state.markdownVisual.committing = true;
+    try {
+        const changed = replaceMarkdownBlockRange(info.startLine, info.endLine, nextMarkdown);
+        if (!changed) return false;
+        scheduleMarkdownPreviewSync({
+            markdownPath: state.animPreview.previewMarkdownPath,
+            refreshAnimRefs: true
+        });
+        scheduleMarkdownWysiwygBridgeSync();
+        return true;
+    } finally {
+        state.markdownVisual.committing = false;
+    }
+}
+
+function commitSelectedMarkdownDomBlock(reason) {
+    const selected = state.markdownVisual.selectedDomBlock;
+    if (!selected) return false;
+    return commitMarkdownDomBlock(selected, reason);
+}
+
+function selectedMarkdownDomBlockInfo() {
+    return markdownDomBlockInfo(state.markdownVisual.selectedDomBlock);
+}
+
+function jumpToSelectedMarkdownDomBlockSource() {
+    const info = selectedMarkdownDomBlockInfo();
+    if (!info || !state.editor) return;
+    setMarkdownPreviewMode('edit');
+    const model = state.editor.getModel();
+    if (!model) return;
+    const lineNumber = Math.max(1, Math.min(model.getLineCount(), info.startLine));
+    state.editor.setPosition({ lineNumber, column: 1 });
+    state.editor.revealLineInCenter(lineNumber);
+    state.editor.focus();
+}
+
+function deleteSelectedMarkdownDomBlock() {
+    const info = selectedMarkdownDomBlockInfo();
+    if (!info) return false;
+    const changed = replaceMarkdownBlockRange(info.startLine, info.endLine, '');
+    if (!changed) return false;
+    clearMarkdownWysiwygSelection();
+    scheduleMarkdownPreviewSync({
+        markdownPath: state.animPreview.previewMarkdownPath,
+        refreshAnimRefs: true
+    });
+    scheduleMarkdownWysiwygBridgeSync();
+    return true;
+}
+
+function moveSelectedMarkdownDomBlock(direction) {
+    const info = selectedMarkdownDomBlockInfo();
+    if (!info) return false;
+    const ctx = getActiveMarkdownContext();
+    if (!ctx) return false;
+    const lines = String(ctx.model.getValue() || '').replace(/\r\n/g, '\n').split('\n');
+    const blocks = parseMarkdownVisualBlocks(ctx.model.getValue());
+    const index = blocks.findIndex((block) => {
+        return Number(block.startLine || 0) === info.startLine && Number(block.endLine || 0) === info.endLine;
+    });
+    if (index < 0) return false;
+    const offset = direction > 0 ? 1 : -1;
+    const targetIndex = index + offset;
+    if (targetIndex < 0 || targetIndex >= blocks.length) return false;
+    const current = blocks[index];
+    const target = blocks[targetIndex];
+
+    const currentStart = Math.max(0, Number(current.startLine || 1) - 1);
+    const currentEnd = Math.max(currentStart + 1, Number(current.endLine || current.startLine || 1) - 1);
+    const targetStart = Math.max(0, Number(target.startLine || 1) - 1);
+    const targetEnd = Math.max(targetStart + 1, Number(target.endLine || target.startLine || 1) - 1);
+    const currentChunk = lines.slice(currentStart, currentEnd);
+    const targetChunk = lines.slice(targetStart, targetEnd);
+
+    let nextLines = [];
+    if (offset < 0) {
+        const between = lines.slice(targetEnd, currentStart);
+        nextLines = [
+            ...lines.slice(0, targetStart),
+            ...currentChunk,
+            ...between,
+            ...targetChunk,
+            ...lines.slice(currentEnd)
+        ];
+    } else {
+        const between = lines.slice(currentEnd, targetStart);
+        nextLines = [
+            ...lines.slice(0, currentStart),
+            ...targetChunk,
+            ...between,
+            ...currentChunk,
+            ...lines.slice(targetEnd)
+        ];
+    }
+
+    ctx.model.setValue(nextLines.join('\n'));
+    scheduleMarkdownPreviewSync({
+        markdownPath: state.animPreview.previewMarkdownPath,
+        refreshAnimRefs: true
+    });
+    scheduleMarkdownWysiwygBridgeSync();
+    return true;
+}
+
+function execMarkdownWysiwygFormatCommand(command, value) {
+    const frameDoc = getMarkdownPreviewFrameDocument();
+    if (!frameDoc || typeof frameDoc.execCommand !== 'function') return false;
+    try {
+        frameDoc.execCommand(String(command || ''), false, value == null ? null : String(value));
+        return true;
+    } catch (_error) {
+        return false;
+    }
+}
+
+function ensureMarkdownWysiwygBridgeHandlers(root) {
+    const safeRoot = root && typeof root.addEventListener === 'function' ? root : null;
+    if (!safeRoot) return;
+    if (safeRoot.__TML_IDE_WYSIWYG_BOUND) return;
+    safeRoot.__TML_IDE_WYSIWYG_BOUND = true;
+
+    safeRoot.addEventListener('click', (event) => {
+        const target = event && event.target ? event.target.closest('[data-src-start][data-src-end]') : null;
+        if (!target) return;
+        selectMarkdownWysiwygBlock(target, {});
+    });
+
+    safeRoot.addEventListener('focusin', (event) => {
+        const target = event && event.target ? event.target.closest('[data-src-start][data-src-end]') : null;
+        if (!target) return;
+        selectMarkdownWysiwygBlock(target, {});
+    });
+
+    safeRoot.addEventListener('focusout', (event) => {
+        const target = event && event.target ? event.target.closest('[data-src-start][data-src-end]') : null;
+        if (!target) return;
+        const related = event.relatedTarget;
+        if (related && target.contains(related)) return;
+        commitMarkdownDomBlock(target, 'blur');
+    });
+
+    safeRoot.addEventListener('keydown', (event) => {
+        const hasMod = !!(event.ctrlKey || event.metaKey);
+        if (!hasMod) return;
+        const key = String(event.key || '').toLowerCase();
+        if (key === 'b') {
+            event.preventDefault();
+            execMarkdownWysiwygFormatCommand('bold');
+            return;
+        }
+        if (key === 'i') {
+            event.preventDefault();
+            execMarkdownWysiwygFormatCommand('italic');
+            return;
+        }
+        if (key === 'k') {
+            event.preventDefault();
+            const href = globalThis.prompt('输入链接 URL', 'https://');
+            if (!href) return;
+            execMarkdownWysiwygFormatCommand('createLink', href);
+            return;
+        }
+        if (key === 'enter') {
+            event.preventDefault();
+            commitSelectedMarkdownDomBlock('shortcut');
+        }
+    });
+}
+
+function scheduleMarkdownWysiwygBridgeSync() {
+    if (state.markdownVisual.bridgeSyncTimer) {
+        clearTimeout(state.markdownVisual.bridgeSyncTimer);
+    }
+    state.markdownVisual.bridgeSyncTimer = setTimeout(() => {
+        state.markdownVisual.bridgeSyncTimer = 0;
+        syncMarkdownWysiwygBindings();
+    }, 120);
+}
+
+function syncMarkdownWysiwygBindings() {
+    if (state.ui.markdownPreviewMode !== 'preview') return;
+    const root = getMarkdownPreviewContentRoot();
+    if (!root) return;
+    ensureMarkdownWysiwygFrameStyle();
+    ensureMarkdownWysiwygBridgeHandlers(root);
+
+    const previous = selectedMarkdownDomBlockInfo();
+    let nextSelection = null;
+    root.querySelectorAll('[data-src-start][data-src-end]').forEach((node) => {
+        const info = markdownDomBlockInfo(node);
+        if (!info) return;
+        node.classList.add('tml-ide-md-block');
+        if (info.editable) {
+            node.classList.add('tml-ide-md-editable');
+            node.classList.remove('tml-ide-md-readonly');
+            node.setAttribute('contenteditable', 'true');
+            node.setAttribute('spellcheck', 'false');
+            node.dataset.blockEditable = '1';
+        } else {
+            node.classList.remove('tml-ide-md-editable');
+            node.classList.add('tml-ide-md-readonly');
+            node.setAttribute('contenteditable', 'false');
+            node.dataset.blockEditable = '0';
+        }
+        if (!nextSelection && previous && info.startLine === previous.startLine && info.endLine === previous.endLine) {
+            nextSelection = node;
+        }
+    });
+
+    if (nextSelection) {
+        selectMarkdownWysiwygBlock(nextSelection, {});
+        return;
+    }
+    if (state.markdownVisual.selectedDomBlock && !root.contains(state.markdownVisual.selectedDomBlock)) {
+        clearMarkdownWysiwygSelection();
+    } else if (!state.markdownVisual.selectedDomBlock) {
+        updateMarkdownWysiwygSelectionUi(null);
+    }
+}
+
+async function ensureMarkdownPreviewFrameReady(markdownRepoPath) {
+    if (!dom.markdownPreviewFrame) return false;
+    const url = await buildViewerPageUrl(markdownRepoPath, {
+        studioPreview: true,
+        studioEmbed: true
+    });
+    const currentSrc = String(dom.markdownPreviewFrame.getAttribute('src') || '');
+    if (state.markdownVisual.frameReady && state.markdownVisual.previewFrameUrl === url && currentSrc === url) {
+        return true;
+    }
+
+    await new Promise((resolve, reject) => {
+        let settled = false;
+        const timeout = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            reject(new Error('Viewer 预览加载超时'));
+        }, 15000);
+        const cleanup = () => {
+            clearTimeout(timeout);
+            dom.markdownPreviewFrame.removeEventListener('load', onLoad);
+            dom.markdownPreviewFrame.removeEventListener('error', onError);
+        };
+        const onLoad = () => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            resolve();
+        };
+        const onError = () => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            reject(new Error('Viewer 预览加载失败'));
+        };
+        dom.markdownPreviewFrame.addEventListener('load', onLoad);
+        dom.markdownPreviewFrame.addEventListener('error', onError);
+        dom.markdownPreviewFrame.src = url;
+    });
+
+    state.markdownVisual.previewFrameUrl = url;
+    state.markdownVisual.frameReady = true;
+    state.markdownVisual.bridgeReady = false;
+    clearMarkdownWysiwygSelection();
+    return true;
+}
+
 function encodeMarkdownVisualContentPath(pathValue) {
     return String(pathValue || '')
         .split('/')
@@ -6394,10 +6961,15 @@ function scheduleMarkdownVisualRefresh() {
     if (state.markdownVisual.refreshTimer) {
         clearTimeout(state.markdownVisual.refreshTimer);
     }
-    state.markdownVisual.refreshTimer = setTimeout(() => {
+    state.markdownVisual.refreshTimer = setTimeout(async () => {
         state.markdownVisual.refreshTimer = 0;
         renderMarkdownVisualEditor();
-    }, 90);
+        try {
+            await openMarkdownViewerPreview(false, { saveWorkspace: false });
+        } catch (error) {
+            addEvent('error', `可视化刷新失败：${error.message}`);
+        }
+    }, 120);
 }
 
 function findSelectedMarkdownVisualBlock() {
@@ -8515,17 +9087,41 @@ function applyMarkdownInsertAction(action) {
     }
     if (key === 'cs-embed') {
         const selectedTitle = readMarkdownSelectionText('代码说明');
-        insertMarkdownBlockSnippet(`[${selectedTitle}](cs:./code/demo.cs#cs:t:命名空间.类型名)\n`, 'cs:./code/demo.cs#cs:t:命名空间.类型名');
+        openMarkdownPathPicker('cs-embed').then((pickedPath) => {
+            const safePath = String(pickedPath || '').trim();
+            if (!safePath) return;
+            const snippet = `[${selectedTitle}](cs:${safePath}#cs:t:命名空间.类型名)\n`;
+            const ok = insertMarkdownBlockSnippet(snippet, `cs:${safePath}#cs:t:命名空间.类型名`);
+            if (ok) {
+                addEvent('info', `已插入 C# 引用：${safePath}`);
+            }
+        });
         return;
     }
     if (key === 'anim') {
         const selectedTitle = readMarkdownSelectionText('动画说明');
-        insertMarkdownBlockSnippet(`[${selectedTitle}](anims:anims/你的动画文件.anim.ts)\n`, 'anims:anims/你的动画文件.anim.ts');
+        openMarkdownPathPicker('anim').then((pickedPath) => {
+            const safePath = String(pickedPath || '').trim();
+            if (!safePath) return;
+            const snippet = `[${selectedTitle}](anims:${safePath})\n`;
+            const ok = insertMarkdownBlockSnippet(snippet, `anims:${safePath}`);
+            if (ok) {
+                addEvent('info', `已插入动画引用：${safePath}`);
+            }
+        });
         return;
     }
     if (key === 'fx-embed') {
         const selectedTitle = readMarkdownSelectionText('Shader 说明');
-        insertMarkdownBlockSnippet(`[${selectedTitle}](fx:./shaders/demo.fx)\n`, 'fx:./shaders/demo.fx');
+        openMarkdownPathPicker('fx-embed').then((pickedPath) => {
+            const safePath = String(pickedPath || '').trim();
+            if (!safePath) return;
+            const snippet = `[${selectedTitle}](fx:${safePath})\n`;
+            const ok = insertMarkdownBlockSnippet(snippet, `fx:${safePath}`);
+            if (ok) {
+                addEvent('info', `已插入 FX 引用：${safePath}`);
+            }
+        });
         return;
     }
     if (key === 'callout-note') {
@@ -8833,6 +9429,128 @@ async function chooseShaderUsingSlot(usingMap) {
     return new Promise((resolve) => {
         state.shaderSlotPicker.resolver = (slotIndex) => {
             resolve(Number.isInteger(slotIndex) ? slotIndex : -1);
+        };
+    });
+}
+
+function setMarkdownPathPickerOpen(open) {
+    const shouldOpen = !!open;
+    state.markdownPathPicker.open = shouldOpen;
+    if (dom.markdownPathPickerModal) {
+        dom.markdownPathPickerModal.hidden = !shouldOpen;
+    }
+}
+
+function closeMarkdownPathPicker(selectedPath) {
+    const resolver = state.markdownPathPicker.resolver;
+    state.markdownPathPicker.resolver = null;
+    setMarkdownPathPickerOpen(false);
+    if (typeof resolver === 'function') {
+        resolver(String(selectedPath || ''));
+    }
+}
+
+function markdownPathPickerMeta(mode) {
+    const safeMode = String(mode || '').trim();
+    return MARKDOWN_PATH_PICKER_MODE_META[safeMode] || MARKDOWN_PATH_PICKER_MODE_META.image;
+}
+
+function formatMarkdownInsertRelativePath(baseMarkdownFilePath, targetRepoPath) {
+    const rel = relativeRepoPathFromFile(baseMarkdownFilePath, targetRepoPath);
+    if (!rel) {
+        const baseName = basenameRepoPath(targetRepoPath);
+        return baseName ? `./${baseName}` : '';
+    }
+    if (rel.startsWith('./') || rel.startsWith('../')) return rel;
+    return `./${rel}`;
+}
+
+function buildMarkdownPathPickerEntries(mode, baseMarkdownFilePath) {
+    const meta = markdownPathPickerMeta(mode);
+    return state.workspace.files
+        .filter((file) => {
+            if (!file || !file.path) return false;
+            const fileMode = detectFileMode(file.path);
+            return !!meta.allowMode(fileMode, file.path);
+        })
+        .map((file) => ({
+            label: basenameRepoPath(file.path) || file.path,
+            repoPath: normalizeRepoPath(file.path),
+            insertPath: formatMarkdownInsertRelativePath(baseMarkdownFilePath, normalizeRepoPath(file.path))
+        }))
+        .filter((entry) => !!entry.repoPath && !!entry.insertPath)
+        .sort((left, right) => stableRepoPathCompare(left.repoPath, right.repoPath));
+}
+
+function renderMarkdownPathPickerList() {
+    if (!dom.markdownPathPickerList) return;
+    const mode = state.markdownPathPicker.mode;
+    const baseMarkdownFilePath = state.markdownPathPicker.markdownFilePath;
+    const filterText = String(dom.markdownPathPickerFilter && dom.markdownPathPickerFilter.value || '').trim().toLowerCase();
+    const allEntries = buildMarkdownPathPickerEntries(mode, baseMarkdownFilePath);
+    const entries = filterText
+        ? allEntries.filter((entry) => {
+            const hay = `${entry.label} ${entry.repoPath} ${entry.insertPath}`.toLowerCase();
+            return hay.includes(filterText);
+        })
+        : allEntries;
+
+    dom.markdownPathPickerList.innerHTML = '';
+    if (entries.length <= 0) {
+        const empty = document.createElement('p');
+        empty.className = 'markdown-path-picker-empty';
+        empty.textContent = '没有可用文件，请先在工作区创建对应文件。';
+        dom.markdownPathPickerList.appendChild(empty);
+        return;
+    }
+
+    entries.forEach((entry) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'markdown-path-picker-item';
+        const title = document.createElement('span');
+        title.textContent = entry.label;
+        const detail = document.createElement('small');
+        detail.textContent = entry.insertPath;
+        btn.append(title, detail);
+        btn.addEventListener('click', () => {
+            closeMarkdownPathPicker(entry.insertPath);
+        });
+        dom.markdownPathPickerList.appendChild(btn);
+    });
+}
+
+function openMarkdownPathPicker(mode, options) {
+    const opts = options && typeof options === 'object' ? options : {};
+    const active = opts.activeFile || getActiveFile();
+    if (!active || detectFileMode(active.path) !== 'markdown') {
+        return Promise.resolve('');
+    }
+
+    state.markdownPathPicker.mode = String(mode || '').trim();
+    state.markdownPathPicker.markdownFilePath = normalizeRepoPath(active.path);
+    const meta = markdownPathPickerMeta(state.markdownPathPicker.mode);
+    if (dom.markdownPathPickerTitle) {
+        dom.markdownPathPickerTitle.textContent = meta.title;
+    }
+    if (dom.markdownPathPickerTip) {
+        dom.markdownPathPickerTip.textContent = meta.tip;
+    }
+    if (dom.markdownPathPickerFilter) {
+        dom.markdownPathPickerFilter.value = '';
+    }
+    renderMarkdownPathPickerList();
+    setMarkdownPathPickerOpen(true);
+
+    requestAnimationFrame(() => {
+        if (dom.markdownPathPickerFilter) {
+            dom.markdownPathPickerFilter.focus();
+        }
+    });
+
+    return new Promise((resolve) => {
+        state.markdownPathPicker.resolver = (selectedPath) => {
+            resolve(String(selectedPath || ''));
         };
     });
 }
@@ -10399,7 +11117,8 @@ function applyEditorModeUi() {
     }
 }
 
-async function openMarkdownViewerPreview(newTab) {
+async function openMarkdownViewerPreview(newTab, options) {
+    const opts = options && typeof options === 'object' ? options : {};
     const active = getActiveFile();
     if (!active || detectFileMode(active.path) !== 'markdown') return;
     const repoPath = normalizeMarkdownRepoPath(active.path);
@@ -10416,7 +11135,9 @@ async function openMarkdownViewerPreview(newTab) {
         immediate: false,
         reason: '打开预览'
     });
-    await saveWorkspaceImmediate();
+    if (opts.saveWorkspace !== false) {
+        await saveWorkspaceImmediate();
+    }
     if (newTab) {
         const url = await buildViewerPageUrl(repoPath, {
             studioPreview: true,
@@ -10425,8 +11146,9 @@ async function openMarkdownViewerPreview(newTab) {
         globalThis.open(url, '_blank', 'noopener,noreferrer');
         return;
     }
+    await ensureMarkdownPreviewFrameReady(repoPath);
     postMarkdownViewerPreviewPayload(previewPayload);
-    scheduleMarkdownVisualRefresh();
+    scheduleMarkdownWysiwygBridgeSync();
 }
 
 function runShaderCompileForActiveFile(options) {
@@ -12449,6 +13171,39 @@ function bindUiEvents() {
         });
     }
 
+    if (dom.markdownPathPickerBackdrop) {
+        dom.markdownPathPickerBackdrop.addEventListener('click', () => {
+            closeMarkdownPathPicker('');
+        });
+    }
+
+    if (dom.btnMarkdownPathPickerClose) {
+        dom.btnMarkdownPathPickerClose.addEventListener('click', () => {
+            closeMarkdownPathPicker('');
+        });
+    }
+
+    if (dom.btnMarkdownPathPickerCancel) {
+        dom.btnMarkdownPathPickerCancel.addEventListener('click', () => {
+            closeMarkdownPathPicker('');
+        });
+    }
+
+    if (dom.markdownPathPickerFilter) {
+        dom.markdownPathPickerFilter.addEventListener('input', () => {
+            renderMarkdownPathPickerList();
+        });
+        dom.markdownPathPickerFilter.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') return;
+            const firstButton = dom.markdownPathPickerList
+                ? dom.markdownPathPickerList.querySelector('button.markdown-path-picker-item')
+                : null;
+            if (!firstButton) return;
+            event.preventDefault();
+            firstButton.click();
+        });
+    }
+
     if (dom.shaderSlotPickerBackdrop) {
         dom.shaderSlotPickerBackdrop.addEventListener('click', () => {
             closeShaderSlotPicker(-1);
@@ -12511,6 +13266,11 @@ function bindUiEvents() {
             closeShaderSlotPicker(-1);
             return;
         }
+        if (state.markdownPathPicker.open && event.key === 'Escape') {
+            event.preventDefault();
+            closeMarkdownPathPicker('');
+            return;
+        }
         if (state.flowchartDrawer.open && event.key === 'Escape') {
             event.preventDefault();
             setFlowchartModalOpen(false);
@@ -12537,7 +13297,7 @@ function bindUiEvents() {
             setMarkdownPreviewMode(nextMode);
             if (nextMode === 'preview') {
                 try {
-                    await openMarkdownViewerPreview(false);
+                    await openMarkdownViewerPreview(false, { saveWorkspace: false });
                 } catch (error) {
                     addEvent('error', `预览失败：${error.message}`);
                 }
@@ -12600,6 +13360,56 @@ function bindUiEvents() {
             if (String(event.key || '').toLowerCase() !== 'enter') return;
             event.preventDefault();
             applySelectedMarkdownVisualEdit();
+        });
+    }
+
+    if (dom.btnMdWysBold) {
+        dom.btnMdWysBold.addEventListener('click', () => {
+            if (execMarkdownWysiwygFormatCommand('bold')) {
+                commitSelectedMarkdownDomBlock('toolbar-bold');
+            }
+        });
+    }
+
+    if (dom.btnMdWysItalic) {
+        dom.btnMdWysItalic.addEventListener('click', () => {
+            if (execMarkdownWysiwygFormatCommand('italic')) {
+                commitSelectedMarkdownDomBlock('toolbar-italic');
+            }
+        });
+    }
+
+    if (dom.btnMdWysLink) {
+        dom.btnMdWysLink.addEventListener('click', () => {
+            const href = globalThis.prompt('输入链接 URL', 'https://');
+            if (!href) return;
+            if (execMarkdownWysiwygFormatCommand('createLink', href)) {
+                commitSelectedMarkdownDomBlock('toolbar-link');
+            }
+        });
+    }
+
+    if (dom.btnMdWysJumpSource) {
+        dom.btnMdWysJumpSource.addEventListener('click', () => {
+            jumpToSelectedMarkdownDomBlockSource();
+        });
+    }
+
+    if (dom.btnMdWysMoveUp) {
+        dom.btnMdWysMoveUp.addEventListener('click', () => {
+            moveSelectedMarkdownDomBlock(-1);
+        });
+    }
+
+    if (dom.btnMdWysMoveDown) {
+        dom.btnMdWysMoveDown.addEventListener('click', () => {
+            moveSelectedMarkdownDomBlock(1);
+        });
+    }
+
+    if (dom.btnMdWysDelete) {
+        dom.btnMdWysDelete.addEventListener('click', () => {
+            deleteSelectedMarkdownDomBlock();
         });
     }
 
@@ -12704,22 +13514,19 @@ function bindUiEvents() {
     if (dom.btnMdInsertImage) {
         dom.btnMdInsertImage.addEventListener('click', () => {
             if (!getMarkdownContextForAction('插入图片引用')) return;
-            const imagePathRaw = globalThis.prompt('请输入图片路径（相对站点内容目录）', './images/example.png');
-            if (imagePathRaw === null) return;
-            const imagePath = String(imagePathRaw || '').trim();
-            if (!imagePath) {
-                addEvent('error', '图片路径不能为空');
-                return;
-            }
-            const altRaw = globalThis.prompt('请输入图片说明（alt）', '图片说明');
-            if (altRaw === null) return;
-            const alt = String(altRaw || '').trim() || '图片说明';
-            const ok = insertMarkdownAtCursor(`![${alt}](${imagePath})\n`);
-            if (!ok) {
-                addEvent('error', '插入图片引用失败');
-                return;
-            }
-            addEvent('info', '已插入图片引用');
+            openMarkdownPathPicker('image').then((pickedPath) => {
+                const imagePath = String(pickedPath || '').trim();
+                if (!imagePath) return;
+                const altRaw = globalThis.prompt('请输入图片说明（alt）', '图片说明');
+                if (altRaw === null) return;
+                const alt = String(altRaw || '').trim() || '图片说明';
+                const ok = insertMarkdownAtCursor(`![${alt}](${imagePath})\n`);
+                if (!ok) {
+                    addEvent('error', '插入图片引用失败');
+                    return;
+                }
+                addEvent('info', '已插入图片引用');
+            });
         });
     }
 
@@ -12984,6 +13791,20 @@ function bindUiEvents() {
                 const action = String(button.getAttribute('data-md-insert') || '').trim();
                 applyMarkdownInsertAction(action);
             });
+        });
+    }
+
+    if (dom.btnMdInsertAnimation) {
+        dom.btnMdInsertAnimation.addEventListener('click', () => {
+            const action = String(dom.mdAnimationInsertKind && dom.mdAnimationInsertKind.value || 'anim').trim();
+            applyMarkdownInsertAction(action || 'anim');
+        });
+    }
+
+    if (dom.btnMdInsertQuiz) {
+        dom.btnMdInsertQuiz.addEventListener('click', () => {
+            const action = String(dom.mdQuizInsertKind && dom.mdQuizInsertKind.value || 'quiz-tf').trim();
+            applyMarkdownInsertAction(action || 'quiz-tf');
         });
     }
 

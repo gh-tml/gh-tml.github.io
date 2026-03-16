@@ -17,8 +17,9 @@ test('index.html exposes markdown insertion buttons migrated from article-studio
     assert.match(html, /id="btn-markdown-metadata"/);
     assert.match(html, /id="markdown-meta-drawer"/);
     assert.match(html, /id="quick-create-modal"/);
-    assert.match(html, /id="markdown-visual-canvas"/);
-    assert.match(html, /id="markdown-visual-inspector"/);
+    assert.match(html, /id="markdown-preview-frame"/);
+    assert.match(html, /id="markdown-wysiwyg-toolbar"/);
+    assert.match(html, /id="markdown-path-picker-modal"/);
     assert.match(html, /id="btn-md-focus-mode"/);
     assert.match(html, /id="btn-md-flowchart"/);
     assert.match(html, /id="studio-flowchart-modal"/);
@@ -40,15 +41,14 @@ test('index.html exposes markdown insertion buttons migrated from article-studio
     assert.match(html, /data-md-insert="math-block"/);
     assert.match(html, /data-md-insert="ref"/);
     assert.match(html, /data-md-insert="cs-embed"/);
-    assert.match(html, /data-md-insert="anim"/);
     assert.match(html, /data-md-insert="fx-embed"/);
     assert.match(html, /data-md-insert="callout-note"/);
-    assert.match(html, /data-md-insert="animts-block"/);
+    assert.match(html, /id="md-animation-insert-kind"/);
+    assert.match(html, /id="btn-md-insert-animation"/);
     assert.match(html, /data-md-insert="color-inline"/);
     assert.match(html, /data-md-insert="color-change-inline"/);
-    assert.match(html, /data-md-insert="quiz-tf"/);
-    assert.match(html, /data-md-insert="quiz-choice"/);
-    assert.match(html, /data-md-insert="quiz-multi"/);
+    assert.match(html, /id="md-quiz-insert-kind"/);
+    assert.match(html, /id="btn-md-insert-quiz"/);
 });
 
 test('main.js wires markdown insert actions and Ctrl+V image paste flow', () => {
@@ -56,9 +56,11 @@ test('main.js wires markdown insert actions and Ctrl+V image paste flow', () => 
 
     assert.match(source, /markdownInsertButtons/);
     assert.match(source, /function applyMarkdownInsertAction/);
+    assert.match(source, /function openMarkdownPathPicker/);
+    assert.match(source, /function ensureMarkdownPreviewFrameReady/);
+    assert.match(source, /function syncMarkdownWysiwygBindings/);
     assert.match(source, /function openQuickCreateModal/);
     assert.match(source, /function setMarkdownMetaDrawerOpen/);
-    assert.match(source, /function renderMarkdownVisualEditor/);
     assert.match(source, /function createDefaultFlowchartModel/);
     assert.match(source, /function parseMermaidFlowchartToModel/);
     assert.match(source, /function setFlowchartModalOpen/);
@@ -105,13 +107,14 @@ test('main.js wires markdown insert actions and Ctrl+V image paste flow', () => 
     assert.match(source, /__tmlIdeDebug[\s\S]*getFlowchartGraphState/);
     assert.match(source, /articleStudioViewerPreview\.v1/);
     assert.match(source, /params\.set\('studio_preview', '1'\)/);
+    assert.match(source, /params\.set\('studio_embed', '1'\)/);
     assert.match(source, /article-studio-preview-update/);
     assert.match(source, /addEventListener\('paste'/);
     assert.match(source, /已粘贴图片/);
     assert.match(source, /readMarkdownSelectionText\('动画说明'\)/);
     assert.match(source, /readMarkdownSelectionText\('Shader 说明'\)/);
-    assert.match(source, /anims:anims\/你的动画文件\.anim\.ts/);
-    assert.match(source, /fx:\.\/shaders\/demo\.fx/);
+    assert.match(source, /openMarkdownPathPicker\('anim'\)/);
+    assert.match(source, /openMarkdownPathPicker\('fx-embed'\)/);
     assert.match(source, /if \(key === 'math-inline'\)/);
     assert.match(source, /if \(key === 'math-block'\)/);
     assert.match(source, /wrapMarkdownSelection\('\$', '\$', '公式'\)/);
@@ -122,9 +125,9 @@ test('main.js wires markdown insert actions and Ctrl+V image paste flow', () => 
     assert.match(source, /extractBase64ContentFromDataUrl[\s\S]*encoding:\s*'base64'/);
     assert.match(source, /detectFileMode\(pathValue\)[\s\S]*'image'/);
     assert.match(source, /detectFileMode\(pathValue\)[\s\S]*'shaderfx'/);
-    assert.match(source, /function renderMarkdownVisualBlockPreview/);
-    assert.match(source, /markdown-visual-block-render/);
-    assert.match(source, /renderMarkdownVisualEmbedPreview/);
+    assert.match(source, /markdown-path-picker-modal/);
+    assert.match(source, /btn-md-insert-animation/);
+    assert.match(source, /btn-md-insert-quiz/);
     assert.doesNotMatch(source, /insertMarkdownBlockSnippet\(`\{\{anim:/);
     assert.doesNotMatch(source, /globalThis\.open\(`\/site\/pages\/viewer\.html\?file=/);
 });

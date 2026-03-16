@@ -3065,3 +3065,23 @@
 **备注**：
 - 本次业务改动仅 `site/assets/css/minimal-docs.css`，用于将暗色/特殊模式下的首页紧凑布局规则同步到亮色模式。
 - `check-generated` 失败属于当前仓库基线与生成产物差异导致的 `git diff --exit-code` 返回，不是构建流程中断。
+
+### 验证记录 [2026-03-16 08:52]：viewer AI 移除 + TML-IDE Markdown 所见即所得改造
+
+**级别**：L3（viewer + IDE + 自动化交互回归）
+
+**命令与结果**：
+- `node --test site/tooling/scripts/viewer-sidebar-tree-contract.test.js tml-ide-app/tests/markdown-editor-migration.test.js`：通过（6 passed, 0 failed）
+- `node --test site/tooling/scripts/viewer-sidebar-tree-contract.test.js tml-ide-app/tests/markdown-editor-migration.test.js tml-ide-app/tests/ide-acceptance-alignment.test.js`：失败（`ide-acceptance-alignment` 依赖文件 `tmp-playwright/lib/suites.mjs` 缺失，`ENOENT`）
+- `node (Playwright 自动化脚本，访问 http://127.0.0.1:4174/tml-ide/)`：通过（点击与输入验证 + 截图产物）
+- `npm run build`：通过（`EXIT:0`）
+- `npm run check-generated`：失败（`EXIT:1`，最终失败于 `git diff --exit-code`）
+
+**备注**：
+- 自动化验证结果：`tmp/automation/20260316-phase1/automation-result.json`
+- 自动化截图：
+  - `tmp/automation/20260316-phase1/01-wysiwyg-view.png`
+  - `tmp/automation/20260316-phase1/02-path-picker-modal.png`
+  - `tmp/automation/20260316-phase1/03-quick-create-backdrop-transparent.png`
+- 快速创建遮罩透明规则通过自动化注入位移（将 `.quick-create-dialog` 移出视口）触发监控逻辑验证，`#quick-create-backdrop` 正确追加 `quick-create-backdrop-transparent`。
+- `check-generated` 的失败属于当前工作树存在待评审改动导致的预期返回，不是构建中断。
