@@ -2,7 +2,7 @@
 title: 让我们动起来-Mod弹幕与AI指南
 author: 小天使
 topic: modder-basic
-description: 一句话说明本文内容
+description: 学习弹幕如何编写
 order: 3
 difficulty: beginner
 time: 25分钟
