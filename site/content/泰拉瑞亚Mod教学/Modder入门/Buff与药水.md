@@ -166,10 +166,10 @@ explain: |
 
 回顾一下今天学到的：
 
-- ✅ 创建 `ModBuff` 类
-- ✅ 使用 `SetStaticDefaults` 设置Buff属性
-- ✅ 使用 `Update` 方法添加Buff效果
-- ✅ 创建药水物品并关联Buff
+- [x] 创建 `ModBuff` 类
+- [x] 使用 `SetStaticDefaults` 设置Buff属性
+- [x] 使用 `Update` 方法添加Buff效果
+- [x] 创建药水物品并关联Buff
 
 > [!TIP] 下一步
 >
