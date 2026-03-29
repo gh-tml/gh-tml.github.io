@@ -34,9 +34,13 @@ NPC 是 Mod 开发中最复杂的部分之一，它涉及到：
 
 所有自定义 NPC 都需要继承 `ModNPC` 类。`ModNPC` 是 tModLoader 提供的基类，封装了大部分 NPC 逻辑。
 
+[FirstNPC 类定义](cs:./code/firstnpc_npc.cs#cs:t:ModDocProject.ModsSource.Modder入门.FirstNPC)
+
 ## SetDefaults - 基础属性
 
 `SetDefaults` 是设置 NPC 核心属性的地方，包含以下关键属性：
+
+[SetDefaults 实现](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.SetDefaults())
 
 ### 碰撞箱设置
 
@@ -58,6 +62,8 @@ NPC 是 Mod 开发中最复杂的部分之一，它涉及到：
 
 `SetStaticDefaults` 在游戏加载时执行一次，用于设置整个 NPC 类型共用的属性。
 
+[SetStaticDefaults 实现](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.SetStaticDefaults())
+
 ### 动画帧数
 
 `Main.npcFrameCount[Type] = 5` 设置动画帧数，需要和贴图的垂直帧数匹配。
@@ -71,6 +77,8 @@ NPC 是 Mod 开发中最复杂的部分之一，它涉及到：
 ## AI() 方法
 
 `AI()` 每帧（约 60 帧/秒）都会被调用，是 NPC 行为逻辑的核心。
+
+[AI 实现](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.AI())
 
 ### aiStyle = -1
 
@@ -94,6 +102,8 @@ NPC 是 Mod 开发中最复杂的部分之一，它涉及到：
 
 当 NPC 成功攻击玩家时触发。使用 `player.AddBuff()` 给玩家添加持续性 Debuff 效果。
 
+[OnHitPlayer 实现](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.OnHitPlayer(Player,Terraria.HitInfo))
+
 常用 Debuff：
 - `BuffID.Poisoned` - 中毒
 - `BuffID.OnFire` - 着火
@@ -106,6 +116,8 @@ NPC 是 Mod 开发中最复杂的部分之一，它涉及到：
 ## SpawnChance 方法
 
 `SpawnChance` 控制 NPC 在什么情况下会生成。返回值是 0 到 1 之间的概率。
+
+[SpawnChance 实现](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.SpawnChance(Terraria.ModLoader.NPCSpawnInfo))
 
 常用生成条件：
 - `SpawnCondition.OverworldDaySlime` - 白天史莱姆
