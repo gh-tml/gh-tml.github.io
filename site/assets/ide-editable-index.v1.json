@@ -1,8 +1,12 @@
 {
   "schemaVersion": 1,
   "root": "site/content",
-  "generatedAt": "2026-03-16T05:43:30.499Z",
+  "generatedAt": "2026-03-29T05:40:34.622Z",
   "files": [
+    {
+      "path": "anims/Program.anim.ts",
+      "kind": "animts"
+    },
     {
       "path": "anims/animgeom-toolkit-recipes.anim.ts",
       "kind": "animts"
@@ -128,7 +132,31 @@
       "kind": "markdown"
     },
     {
+      "path": "泰拉瑞亚Mod教学/Modder入门/Buff与药水.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firstbuff_buff.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firstbuff_potion.cs",
+      "kind": "csharp"
+    },
+    {
       "path": "泰拉瑞亚Mod教学/Modder入门/code/firstclass_makefirstweapon.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firstconsumable_crate.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firstconsumable_food.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firstconsumable_potion.cs",
       "kind": "csharp"
     },
     {
@@ -137,6 +165,18 @@
     },
     {
       "path": "泰拉瑞亚Mod教学/Modder入门/code/firstproj.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firsttile_block.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firsttile_furniture.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firsttile_ore.cs",
       "kind": "csharp"
     },
     {
@@ -160,11 +200,23 @@
       "kind": "markdown"
     },
     {
+      "path": "泰拉瑞亚Mod教学/Modder入门/消耗品.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/物块制作.md",
+      "kind": "markdown"
+    },
+    {
       "path": "泰拉瑞亚Mod教学/Modder入门/第一个Mod弹幕.md",
       "kind": "markdown"
     },
     {
       "path": "泰拉瑞亚Mod教学/Modder入门/第一个配置-可调开关.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/第一个饰品.md",
       "kind": "markdown"
     },
     {
