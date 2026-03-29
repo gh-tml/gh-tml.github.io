@@ -6,7 +6,7 @@ description: 学习如何创建Buff和药水，给玩家或敌人添加状态效
 order: 5
 difficulty: beginner
 time: 20分钟
-next_chapter: Modder入门/物块制作.md
+next_chapter: Modder入门/第一个NPC.md
 prev_chapter: Modder入门/制作第一把武器.md
 source_cs:
   - ./code/firstbuff_buff.cs
