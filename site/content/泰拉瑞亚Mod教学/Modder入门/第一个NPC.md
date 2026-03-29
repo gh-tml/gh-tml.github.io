@@ -32,151 +32,88 @@ NPC 是 Mod 开发中最复杂的部分之一，它涉及到：
 
 ## 继承 ModNPC
 
-所有自定义 NPC 都需要继承 `ModNPC` 类：
-
-[FirstNPC 类定义](cs:./code/firstnpc_npc.cs#cs:t:ModDocProject.ModsSource.Modder入门.FirstNPC)
-
-`ModNPC` 是 tModLoader 提供的基类，封装了大部分 NPC 逻辑。
+所有自定义 NPC 都需要继承 `ModNPC` 类。`ModNPC` 是 tModLoader 提供的基类，封装了大部分 NPC 逻辑。
 
 ## SetDefaults - 基础属性
 
-`SetDefaults` 是设置 NPC 核心属性的地方：
-
-[SetDefaults 方法](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.SetDefaults())
+`SetDefaults` 是设置 NPC 核心属性的地方，包含以下关键属性：
 
 ### 碰撞箱设置
 
-```csharp
-NPC.width = 36;
-NPC.height = 36;
-```
-
-碰撞箱决定 NPC 可以被攻击的范围，应该与贴图大小匹配。
+`NPC.width` 和 `NPC.height` 定义碰撞箱尺寸（像素），决定 NPC 可被攻击的范围，应该与贴图大小匹配。
 
 ### 战斗属性
 
-```csharp
-NPC.damage = 12;      // 攻击伤害
-NPC.defense = 5;      // 防御力
-NPC.lifeMax = 50;     // 最大生命值
-```
+`NPC.damage` 是攻击伤害，`NPC.defense` 是防御力，`NPC.lifeMax` 是最大生命值。
 
 ### 音效设置
 
-```csharp
-NPC.HitSound = SoundID.NPCHit1;    // 受伤音效
-NPC.DeathSound = SoundID.NPCDeath1; // 死亡音效
-```
+`NPC.HitSound` 设置受伤音效，`NPC.DeathSound` 设置死亡音效，使用 `SoundID` 类中的预设 ID。
 
 ### AI 复用技巧
 
-[AI 方法](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.AI())
-
-```csharp
-// 复用僵尸的 AI 行为
-AIType = NPCID.Zombie;
-```
-
-使用 `AIType` 可以直接复用现有 NPC 的 AI，不用自己写复杂逻辑。
+使用 `AIType` 可以直接复用现有 NPC 的 AI。例如 `AIType = NPCID.Zombie` 会让 NPC 使用僵尸的行为逻辑，不用自己写复杂代码。
 
 ## SetStaticDefaults - 静态设置
 
-`SetStaticDefaults` 在游戏加载时执行一次：
-
-[SetStaticDefaults 方法](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.SetStaticDefaults())
+`SetStaticDefaults` 在游戏加载时执行一次，用于设置整个 NPC 类型共用的属性。
 
 ### 动画帧数
 
-```csharp
-Main.npcFrameCount[Type] = 5;
-```
-
-这个数字需要和贴图的垂直帧数匹配。
+`Main.npcFrameCount[Type] = 5` 设置动画帧数，需要和贴图的垂直帧数匹配。
 
 ### Debuff 免疫
 
-```csharp
-NPCID.Sets.SpecificDebuffImmunity[Type][BuffID.Poisoned] = true;
-```
-
-设置后，这个 NPC 不会中毒。
+`NPCID.Sets.SpecificDebuffImmunity[Type][BuffID.Poisoned] = true` 设置对特定 Debuff 的免疫。设置后，这个 NPC 不会中毒。
 
 # AI 行为逻辑
 
 ## AI() 方法
 
-`AI()` 每帧（约 60 帧/秒）都会被调用：
-
-```csharp
-public override void AI()
-{
-    // 面向最近的玩家
-    NPC.TargetClosest(true);
-
-    // 检测目标是否在范围内
-    if (NPC.HasValidTarget && Main.player[NPC.target].Distance(NPC.Center) < 500f)
-    {
-        // 移动
-        NPC.velocity.X = NPC.direction * 1.5f;
-        NPC.velocity.Y = -3f;
-    }
-
-    // 旋转
-    NPC.rotation = NPC.velocity.X * 0.05f;
-}
-```
+`AI()` 每帧（约 60 帧/秒）都会被调用，是 NPC 行为逻辑的核心。
 
 ### aiStyle = -1
 
-设置为 -1 表示完全自定义 AI，需要自己实现 `AI()` 方法。
+`NPC.aiStyle = -1` 表示完全自定义 AI，需要自己实现 `AI()` 方法。如果使用预设 AI，可以设置为其他数值。
+
+### 目标锁定
+
+`NPC.TargetClosest(true)` 让 NPC 面向并锁定最近的玩家。`NPC.HasValidTarget` 检查是否有有效目标。
+
+### 移动与跳跃
+
+`NPC.direction` 是 -1 或 1，表示面朝方向。设置 `NPC.velocity.X` 和 `NPC.velocity.Y` 控制移动和跳跃。
+
+### 旋转效果
+
+`NPC.rotation` 控制 NPC 的旋转角度，常用于让 NPC 随移动方向轻微倾斜。
 
 # NPC 攻击玩家
 
 ## OnHitPlayer 方法
 
-当 NPC 成功攻击玩家时触发：
+当 NPC 成功攻击玩家时触发。使用 `player.AddBuff()` 给玩家添加持续性 Debuff 效果。
 
-[OnHitPlayer 方法](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.OnHitPlayer(Player,Terraria.HitInfo))
-
-```csharp
-public override void OnHitPlayer(Player player, Player.HitInfo hurtInfo)
-{
-    // 给玩家添加中毒效果，持续3秒
-    player.AddBuff(BuffID.Poisoned, 180);
-}
-```
-
-> [!TIP] 常用 Debuff
->
-> - `BuffID.Poisoned` - 中毒
-> - `BuffID.OnFire` - 着火
-> - `BuffID.Bleeding` - 流血
-> - `BuffID.Confused` - 混乱
-> - `BuffID.Slowed` - 缓慢
+常用 Debuff：
+- `BuffID.Poisoned` - 中毒
+- `BuffID.OnFire` - 着火
+- `BuffID.Bleeding` - 流血
+- `BuffID.Confused` - 混乱
+- `BuffID.Slowed` - 缓慢
 
 # 生成条件
 
 ## SpawnChance 方法
 
-控制 NPC 在什么情况下会生成：
+`SpawnChance` 控制 NPC 在什么情况下会生成。返回值是 0 到 1 之间的概率。
 
-[SpawnChance 方法](cs:./code/firstnpc_npc.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstNPC.SpawnChance(Terraria.ModLoader.NPCSpawnInfo))
-
-```csharp
-public override float SpawnChance(NPCSpawnInfo spawnInfo)
-{
-    return SpawnCondition.OverworldDaySlime.Chance * 0.1f;
-}
-```
+常用生成条件：
+- `SpawnCondition.OverworldDaySlime` - 白天史莱姆
+- `SpawnCondition.OverworldNightSlime` - 夜晚史莱姆
+- `SpawnCondition.Corruption` - 腐化之地
+- `SpawnCondition.Underground` - 地下
 
 返回 0 表示不会自然生成，只能通过代码生成。
-
-> [!NOTE] 生成条件参考
->
-> - `SpawnCondition.OverworldDaySlime` - 白天史莱姆
-> - `SpawnCondition.OverworldNightSlime` - 夜晚史莱姆
-> - `SpawnCondition.Corruption` - 腐化之地
-> - `SpawnCondition.Underground` - 地下
 
 # 知识测验
 
