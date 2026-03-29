@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "root": "site/content",
-  "generatedAt": "2026-03-29T05:40:34.622Z",
+  "generatedAt": "2026-03-29T06:15:15.543Z",
   "files": [
     {
       "path": "anims/Program.anim.ts",
@@ -164,7 +164,19 @@
       "kind": "csharp"
     },
     {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firstminion.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firstnpc_npc.cs",
+      "kind": "csharp"
+    },
+    {
       "path": "泰拉瑞亚Mod教学/Modder入门/code/firstproj.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/firstrecipe.cs",
       "kind": "csharp"
     },
     {
@@ -200,6 +212,10 @@
       "kind": "markdown"
     },
     {
+      "path": "泰拉瑞亚Mod教学/Modder入门/合成表入门.md",
+      "kind": "markdown"
+    },
+    {
       "path": "泰拉瑞亚Mod教学/Modder入门/消耗品.md",
       "kind": "markdown"
     },
@@ -209,6 +225,14 @@
     },
     {
       "path": "泰拉瑞亚Mod教学/Modder入门/第一个Mod弹幕.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/第一个NPC.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/第一个召唤物.md",
       "kind": "markdown"
     },
     {
