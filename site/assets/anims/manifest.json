@@ -11,6 +11,7 @@
     "anims/mat4-trs-compose.anim.ts",
     "anims/mat4-view-projection.anim.ts",
     "anims/matrix-mat4-transform.anim.ts",
+    "anims/Program.anim.ts",
     "anims/vec2-basic-ops.anim.ts",
     "anims/vec2-project-decompose.anim.ts",
     "anims/vec3-axis-orbit.anim.ts",
@@ -184,6 +185,13 @@
             "text": "缩放"
           }
         ]
+      }
+    },
+    "anims/Program.anim.ts": {
+      "js": "anims/Program.js",
+      "entry": "anims/Program",
+      "profile": {
+        "heightScale": 1.4
       }
     },
     "anims/vec2-basic-ops.anim.ts": {

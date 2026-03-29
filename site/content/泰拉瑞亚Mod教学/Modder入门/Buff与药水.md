@@ -47,7 +47,7 @@ Buff 有三种主要类型：
 
 Buff 是通过继承 `ModBuff` 来创建的。让我看看最基础的Buff是什么样的：
 
-[Buff类定义](cs:./code/firstbuff_buff.cs#cs:m:ModDocProject.ModsSource.Modder入门.FirstDefenseBuff)
+[Buff类定义](cs:./code/firstbuff_buff.cs#cs:t:ModDocProject.ModsSource.Modder入门.FirstDefenseBuff)
 
 上面的代码展示了创建Buff的基本结构。让我来解释几个关键点：
 
