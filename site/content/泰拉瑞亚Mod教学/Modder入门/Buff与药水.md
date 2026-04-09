@@ -7,7 +7,7 @@ order: 5
 difficulty: beginner
 time: 20分钟
 next_chapter: Modder入门/第一个NPC.md
-prev_chapter: Modder入门/制作第一把武器.md
+prev_chapter: Modder入门/本地化入门.md
 source_cs:
   - ./code/firstbuff_buff.cs
   - ./code/firstbuff_potion.cs

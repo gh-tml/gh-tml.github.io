@@ -190,6 +190,18 @@
 
 **备注**：`check-generated` 失败原因为 `site/content/shader-gallery/pass-1/entry.json` 引用了不存在的 `cover.webp`；与本次顶部栏统一改造无直接关系。本次改造覆盖含站点标题“泰拉瑞亚Mod制作教程”的顶部栏页面，统一为左侧站点标题、中间搜索栏、右侧通用跳转链接。
 
+### 验证记录 [2026-04-09]：F3 Real Manual QA
+
+**级别**：L3
+
+**命令与结果**：
+- `npm run build`：通过
+- `npm run generate-index`：通过
+- `npm run check-generated`：失败
+- `python -m http.server 8000`：通过（本地静态服务）
+
+**备注**：已用浏览器真实访问 `项目结构与ExampleMod组织.md`、`护甲、套装奖励与ModPlayer.md`、`本地化入门.md` 三页，正文、目录和代码块均可正常打开；`check-generated` 的失败点指向 `site/assets/semantic/guided-index.v1.json` 的 diff，当前工作树还存在 `tml-ide/*` 与 `fun-test/quiz-data.v1.json` 的生成漂移，需要后续单独处理。
+
 ### 验证记录 [2026-02-14 22:05]：浏览器逐页一致性调试（顶部栏）
 
 **级别**：L3
@@ -3197,3 +3209,42 @@
 **备注**：
 - `viewer.html` 已恢复 `article-studio-preview-update` 消息桥接，嵌入预览可在不重载 iframe 的场景下增量刷新。
 - `tml-ide/index.html` 入口资源引用已对齐到已跟踪的构建产物；缺失的已跟踪 bundle 文件已恢复，消除 404 启动风险。
+
+### 验证记录 [2026-04-09 10:55]：Task 8 收尾
+
+**级别**：L3
+
+**命令与结果**：
+- `npm run build`：通过（EXIT:0）
+- `npm run check-generated`：失败（EXIT:1，`git diff --exit-code` 检出工作区生成物漂移）
+
+**备注**：本次仅修正 `site/content/泰拉瑞亚Mod教学/Modder入门/Buff与药水.md` 的 `prev_chapter`；当前工作区仍存在既有生成文件差异，包括 `site/assets/search-index.json`、`site/assets/semantic/*.json`、`site/sitemap.xml`、`tml-ide/assets/*` 等。
+
+### 验证记录 [2026-04-09 11:39]：F2 内容质量复核记录闭环
+
+**级别**：L3
+
+**命令与结果**：
+- `npm run build`：通过
+- `npm run check-generated`：失败
+
+**备注**：本次仅补齐 `Agents_Tell.md` / `Agents_Down.md` / `ERRORS.md` 的共享记录闭环；`check-generated` 仍因工作区既有生成物漂移失败，未影响本次记录补写。
+
+### 验证记录 [2026-04-09 13:18]：范围收敛与生成校验处置
+
+**级别**：L3
+
+**命令与结果**：
+- `npm run build`：通过（EXIT:0）
+- `npm run check-generated`：失败（EXIT:1）
+
+**备注**：本次主线四文与 `code/` 镜像已保持在允许范围内，但构建会继续生成/污染 `fun-test/quiz-data.v1.json` 与 `tml-ide/*`，导致 `check-generated` 无法在不扩大范围的前提下通过；已记录后续补跑计划并准备回滚越界文件。
+### 验证记录 [2026-04-09 13:38]：modder-rukou-examplemod-roadmap scope convergence
+
+**级别**：L3
+
+**命令与结果**：
+- `npm run build`：通过（EXIT:0）
+- `npm run check-generated`：失败（EXIT:1；`git diff --exit-code` 检出生成产物差异）
+
+**备注**：本次验证会重写 `fun-test/quiz-data.v1.json` 与 `tml-ide/*` 等生成物，已在验证后恢复；最终工作树仅保留 roadmap 范围内的教程、代码镜像与记录文件。

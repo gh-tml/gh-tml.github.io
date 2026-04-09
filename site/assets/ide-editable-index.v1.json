@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "root": "site/content",
-  "generatedAt": "2026-03-29T06:15:15.543Z",
+  "generatedAt": "2026-04-09T06:31:36.237Z",
   "files": [
     {
       "path": "anims/Program.anim.ts",
@@ -136,6 +136,26 @@
       "kind": "markdown"
     },
     {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/armor_examplearmorsetbonusplayer.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/armor_examplebreastplate.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/armor_examplehelmet.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/armor_exampleleggings.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/buff_exampledefensebuff.cs",
+      "kind": "csharp"
+    },
+    {
       "path": "泰拉瑞亚Mod教学/Modder入门/code/firstbuff_buff.cs",
       "kind": "csharp"
     },
@@ -192,7 +212,31 @@
       "kind": "csharp"
     },
     {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/localization_examplemod_manifest.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/player_exampleinventoryplayer.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/player_simplemodplayer.cs",
+      "kind": "csharp"
+    },
+    {
       "path": "泰拉瑞亚Mod教学/Modder入门/code/program.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/project_exampleitem.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/project_examplemod.cs",
+      "kind": "csharp"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/code/project_examplerecipes.cs",
       "kind": "csharp"
     },
     {
@@ -213,6 +257,14 @@
     },
     {
       "path": "泰拉瑞亚Mod教学/Modder入门/合成表入门.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/护甲、套装奖励与ModPlayer.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/本地化入门.md",
       "kind": "markdown"
     },
     {
@@ -245,6 +297,10 @@
     },
     {
       "path": "泰拉瑞亚Mod教学/Modder入门/第一把远程武器.md",
+      "kind": "markdown"
+    },
+    {
+      "path": "泰拉瑞亚Mod教学/Modder入门/项目结构与ExampleMod组织.md",
       "kind": "markdown"
     },
     {
