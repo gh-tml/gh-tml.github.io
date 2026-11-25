@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const shaderAdapterModule = require('../../../tml-ide-app/public/subapps/assets/js/shader-hlsl-adapter.js');
+const shaderAdapterModule = require('../../../site/assets/js/shader-hlsl-adapter.js');
 const shaderAdapterApi = shaderAdapterModule && typeof shaderAdapterModule.buildFragmentSource === 'function'
     ? shaderAdapterModule
     : (globalThis.ShaderHlslAdapter && typeof globalThis.ShaderHlslAdapter.buildFragmentSource === 'function'

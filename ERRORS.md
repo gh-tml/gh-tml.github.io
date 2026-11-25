@@ -3248,3 +3248,18 @@
 - `npm run check-generated`：失败（EXIT:1；`git diff --exit-code` 检出生成产物差异）
 
 **备注**：本次验证会重写 `fun-test/quiz-data.v1.json` 与 `tml-ide/*` 等生成物，已在验证后恢复；最终工作树仅保留 roadmap 范围内的教程、代码镜像与记录文件。
+
+### 验证记录 [2026-11-25 18:45]：下线在线 IDE 与内容/动画编辑，恢复在线 Shader 页
+
+**级别**：L3
+
+**命令与结果**：
+- `npm run build`：通过（EXIT:0）
+- `npm run check-generated`：失败（EXIT:1，`git diff --exit-code` 仅检出时间戳类漂移）
+- `node --test`：未新增失败（仍为改动前基线里既有的 6 条）
+
+**备注**：
+- 漂移复核：`site/assets/semantic/{guided,bm25}-index.v1.json`、`site/assets/shader-gallery/index.json`、`site/sitemap.xml` 剥离 `generatedAt` / `generated_at` / `<lastmod>` 后与提交版本哈希一致；`sitemap.xml` 的 `lastmod` 因本次改到「如何贡献」多篇文档而更新为 2026-11-25，已随提交入库。生成脚本内嵌构建时间，导致该仓库的 `check-generated` 结构上无法稳定通过，属既有问题。
+- `node --test` 既有失败：`viewer-callout-runtime`（callout / KaTeX 断言不匹配）、`viewer-sidebar-tree-contract`（工作树路径含中文导致 URL 编码后 ENOENT）。改动前基线由未改动的主工作树（b7ccb04）用同一命令采集，同样失败，非本次引入。
+- 环境说明：`~/.npm` 与 `/tmp` 只读，npm 缓存改到项目内 `.worktrees/.npm-cache`；验证日志在 `.worktrees/logs/`。
+

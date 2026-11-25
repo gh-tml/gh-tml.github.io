@@ -784,7 +784,6 @@
                     <ul class="nav-list">
                         <li class="nav-item"><a href="/site/index.html" class="nav-link">首页</a></li>
                         <li class="nav-item"><a href="/site/pages/folder.html" class="nav-link">文档</a></li>
-                        <li class="nav-item"><a href="/tml-ide/" class="nav-link">在线 IDE（Markdown/C#/HLSL）</a></li>
                         <li class="nav-item"><a href="/site/qa.html" class="nav-link">问答</a></li>
                         <li class="nav-item"><a href="https://github.com/DPapyru/DPapyru.github.io" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                         <li class="nav-item nav-accent">
@@ -1039,8 +1038,8 @@
 		    <script src="/site/assets/js/site-quiz.js"></script> <!-- Quiz 题目渲染 -->
                 <script src="/site/assets/js/prism.min.js"></script> <!-- 代码高亮库 -->
                 <script src="/site/assets/js/prism-csharp.min.js"></script> <!-- C#语言高亮支持 -->
-                <script src="/tml-ide/subapps/assets/js/shader-hlsl-adapter.js"></script> <!-- HLSL 适配器（与 IDE 一致） -->
-                <script src="/tml-ide/subapps/assets/js/shader-editor-assist.js"></script> <!-- Shader 编辑器高亮与补全 -->
+                <script src="/site/assets/js/shader-hlsl-adapter.js"></script> <!-- HLSL 适配器（与 IDE 一致） -->
+                <script src="/site/assets/js/shader-editor-assist.js"></script> <!-- Shader 编辑器高亮与补全 -->
                 <script src="/site/assets/js/animts-runtime.js"></script> <!-- animts 动画运行时 -->
     <script>
         // Mermaid 兜底加载：如果本地资源缺失/加载失败，则尝试从 CDN 加载（不影响已有本地加载）
@@ -1637,12 +1636,10 @@
 
             function loadFxEmbedAdapter() {
                 if (FX_EMBED_ADAPTER_PROMISE) return FX_EMBED_ADAPTER_PROMISE;
-                FX_EMBED_ADAPTER_PROMISE = import('/tml-ide-app/src/lib/shader-hlsl-adapter.js').then((module) => {
-                    if (module && typeof module.buildFragmentSource === 'function') {
-                        return module.buildFragmentSource;
-                    }
-                    if (module && module.default && typeof module.default.buildFragmentSource === 'function') {
-                        return module.default.buildFragmentSource;
+                FX_EMBED_ADAPTER_PROMISE = Promise.resolve().then(() => {
+                    const adapter = window.ShaderHlslAdapter;
+                    if (adapter && typeof adapter.buildFragmentSource === 'function') {
+                        return adapter.buildFragmentSource.bind(adapter);
                     }
                     throw new Error('buildFragmentSource 不可用');
                 });

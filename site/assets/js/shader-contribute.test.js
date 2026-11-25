@@ -5,7 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 function loadShaderContributeApi() {
-    const scriptPath = path.resolve('tml-ide-app/public/subapps/assets/js/shader-contribute.js');
+    const scriptPath = path.resolve('site/assets/js/shader-contribute.js');
     const scriptSource = fs.readFileSync(scriptPath, 'utf8');
     const sandbox = {};
     sandbox.globalThis = sandbox;

@@ -5,7 +5,7 @@ date: 2026-02-07
 last_updated: 2026-03-08
 difficulty: beginner
 time: 15分钟
-description: Markdown 写作参考页：集中查询当前 viewer 与网页 IDE 支持的常用扩展语法。
+description: Markdown 写作参考页：集中查询当前 viewer 支持的常用扩展语法。
 topic: article-contribution
 order: 20
 ---

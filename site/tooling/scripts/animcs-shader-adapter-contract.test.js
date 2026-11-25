@@ -7,17 +7,17 @@ function read(filePath) {
     return fs.readFileSync(path.resolve(filePath), 'utf8');
 }
 
-test('viewer loads IDE shader hlsl adapter before animcs runtime', () => {
+test('viewer loads site shader hlsl adapter before animcs runtime', () => {
     const html = read('site/pages/viewer.html');
 
-    assert.match(html, /\/tml-ide\/subapps\/assets\/js\/shader-hlsl-adapter\.js/);
+    assert.match(html, /\/site\/assets\/js\/shader-hlsl-adapter\.js/);
     assert.match(
         html,
         /shader-hlsl-adapter\.js[\s\S]*animts-runtime\.js/
     );
 });
 
-test('anim-renderer loads IDE shader hlsl adapter before animcs runtime', () => {
+test('anim-renderer loads site shader hlsl adapter before animcs runtime', () => {
     const html = read('site/pages/anim-renderer.html');
 
     assert.match(html, /shader-hlsl-adapter\.js/);

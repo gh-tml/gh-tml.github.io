@@ -1,7 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runViewerAcceptance } from './shared-viewer-acceptance.mjs';
-import { runUnifiedAcceptance } from './tml-ide-unified-acceptance.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,13 +29,8 @@ export async function runFullpageAcceptance(options) {
         outputDir,
         report: path.join(repoRoot, 'tmp-playwright/artifacts/viewer-report.v1.json')
     });
-    const unified = await runUnifiedAcceptance({
-        outputDir,
-        report: path.join(repoRoot, 'tmp-playwright/artifacts/unified-ide-report.v1.json')
-    });
     return {
-        viewerReport: viewer.reportPath,
-        unifiedReport: unified.reportPath
+        viewerReport: viewer.reportPath
     };
 }
 
@@ -45,7 +39,6 @@ async function main() {
     const result = await runFullpageAcceptance(args);
     console.log(`Fullpage acceptance completed.`);
     console.log(`Viewer report: ${result.viewerReport}`);
-    console.log(`Unified report: ${result.unifiedReport}`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {

@@ -10,9 +10,7 @@ const targetPages = [
     'site/search-results.html',
     'site/pages/anim-renderer.html',
     'site/pages/folder.html',
-    'site/pages/viewer.html',
-    'tml-ide/subapps/markdown/index.html',
-    'tml-ide/subapps/shader/index.html'
+    'site/pages/viewer.html'
 ];
 
 function readHtml(relativePath) {
