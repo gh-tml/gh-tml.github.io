@@ -2037,6 +2037,12 @@ function normalizeDocPrefixLinks(rawPrefix) {
 function normalizeDateValue(rawDate) {
     const text = String(rawDate || '').trim();
     if (!text) return '';
+    // 先按字面量取年月日：`new Date('2026-1-17')` 会按本地时区解析，
+    // 在 CI(UTC) 与本地(+08) 生成出不同日期，这里避免时区参与。
+    const literal = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[^\d]|$)/);
+    if (literal) {
+        return `${literal[1]}-${literal[2].padStart(2, '0')}-${literal[3].padStart(2, '0')}`;
+    }
     const date = new Date(text);
     if (!Number.isNaN(date.getTime())) {
         const y = String(date.getUTCFullYear()).padStart(4, '0');
@@ -2044,8 +2050,7 @@ function normalizeDateValue(rawDate) {
         const d = String(date.getUTCDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
     }
-    const match = text.match(/^(\d{4}-\d{2}-\d{2})/);
-    return match ? match[1] : text;
+    return text;
 }
 
 function estimateReadingTime(markdownBody) {
