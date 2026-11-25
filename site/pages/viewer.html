@@ -6025,12 +6025,13 @@
 		            }
 		
 		            // 使用 site/content 作为文档根目录
-		            const fetchUrl = `/site/content/${fetchPath.replace(/^\/+/, '')}`;
+		            // 文件名可能含 # 等字符，逐段编码，避免被当成 URL 片段截断
+		            const fetchUrl = '/site/content/' + encodeContentPath(fetchPath);
 
             console.log(`site/pages/viewer.html: 实际fetch URL: ${fetchUrl}`);
             console.log(`完整请求URL将是: ${window.location.origin}${fetchUrl}`);
 
-	            fetch(encodeURI(fetchUrl), { cache: 'no-store' })
+	            fetch(fetchUrl, { cache: 'no-store' })
 	                .then(response => {
                     console.log(`获取响应状态: ${response.status} ${response.statusText}`);
                     if (!response.ok) {

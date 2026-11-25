@@ -3279,3 +3279,16 @@
 - 冒烟（本地 127.0.0.1:8123 静态服务）：`/site/`、`folder.html`、`viewer.html?file=…`、`search-results.html?q=animts`（13 条结果）均正常，页面无“加载失败”
 
 **备注**：`fx:` 卡片恢复为直接使用脚本标签加载的全局适配器（此前动态 `import` 指向 UMD 文件取不到导出，会报 `buildFragmentSource 不可用`），实测卡片显示“实时预览中”且 WebGL2 上下文正常。动画画布在无头/后台窗口下因 `document.hidden=true`、`requestAnimationFrame` 不触发而画面为空，属环境限制，非代码回归。
+
+### 验证记录 [2026-11-25 21:20]：截图检查 + 160 篇全量冒烟
+
+**命令与结果**：
+- `npm test`：通过（135 用例 / 0 失败）
+- 截图（820px 宽）：`/`、`/site/`、`folder.html`、`viewer`（动画文）、`viewer`（fx 文）、`search-results`、`404`，另加基线对照 1 张
+- 全量文档冒烟：160/160 通过（`#markdown-content` 均 > 200 字符）
+
+**备注**：
+1. **修复**：文件名含 `#` 的 2 篇（`5-...with-C#6`、`6-...with-C#7`）此前 `fetch` 被 URL 片段截断而 404，viewer 改用逐段编码（`encodeContentPath`）后正常加载（11888 / 14444 字符）。
+2. 唯一未通过项是 `概念了解/Polymorphism 多态.md`：文件本身只有 24 字节占位符 `WIP`，属内容未写，不是渲染缺陷。
+3. **既有问题（基线 8124 端口同样复现，本单不处理）**：12 篇代码为主的文档存在横向溢出（`<pre>` 长行撑破容器）；`search-results.html` 在 ~820px 宽下三栏重叠、内容被裁。
+4. 截图工具限制：本 carrier 的全页截图只绘制首屏，长页面下方为纯黑，视觉验证改以 DOM 度量 + 基线截图对照完成。
