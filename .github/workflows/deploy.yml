@@ -90,7 +90,6 @@ jobs:
             --exclude '.npm-cache/' \
             --exclude 'node_modules/' \
             --exclude 'node_modules/' \
-            --exclude '.pnpm-store/' \
             --exclude 'tmp-playwright/' \
             --exclude 'test-results/' \
             ./ ./build/
