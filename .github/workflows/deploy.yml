@@ -53,25 +53,6 @@ jobs:
             echo "No root package.json found, skipping root install"
           fi
 
-          if [ -f tml-ide-app/package-lock.json ]; then
-            echo "Installing tml-ide-app dependencies..."
-            npm --prefix tml-ide-app ci
-          elif [ -f tml-ide-app/package.json ]; then
-            echo "No tml-ide-app package-lock.json found, falling back to npm install"
-            npm --prefix tml-ide-app install
-          else
-            echo "No tml-ide-app/package.json found, skipping tml-ide-app install"
-          fi
-
-          if [ -f site-app/package-lock.json ]; then
-            echo "Installing site-app dependencies..."
-            npm --prefix site-app ci
-          elif [ -f site-app/package.json ]; then
-            echo "No site-app package-lock.json found, falling back to npm install"
-            npm --prefix site-app install
-          else
-            echo "No site-app/package.json found, skipping site-app install"
-          fi
           
       - name: Build generated assets (if needed)
         run: |
@@ -105,10 +86,10 @@ jobs:
             --exclude 'build/' \
             --exclude '.git/' \
             --exclude '.github/' \
-            --exclude '.worktrees/' \
+            --exclude '.agents/' \
+            --exclude '.npm-cache/' \
             --exclude 'node_modules/' \
-            --exclude 'site-app/node_modules/' \
-            --exclude 'tml-ide-app/node_modules/' \
+            --exclude 'node_modules/' \
             --exclude '.pnpm-store/' \
             --exclude 'tmp-playwright/' \
             --exclude 'test-results/' \

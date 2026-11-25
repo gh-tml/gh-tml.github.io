@@ -3,14 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { resolveCategory, mapToExistingCategory } = require('./lib/category-utils');
-const yaml = require('js-yaml');
 const { generateFunTestQuiz } = require('./scripts/generate-fun-test-quiz');
 
 const SITE_BASE_URL = 'https://gh-tml.github.io';
 const SEARCH_INDEX_PATH = './site/assets/search-index.json';
 const GUIDED_INDEX_PATH = './site/assets/semantic/guided-index.v1.json';
 const BM25_INDEX_PATH = './site/assets/semantic/bm25-index.v1.json';
-const IDE_EDITABLE_INDEX_PATH = './site/assets/ide-editable-index.v1.json';
 
 // 项目配置
 const projectConfig = {
@@ -607,99 +605,6 @@ function stableStringCompare(left, right) {
     const b = String(right || '');
     if (a === b) return 0;
     return a < b ? -1 : 1;
-}
-
-function scanAllFilesRecursively(dir, baseDir, fileList = []) {
-    if (!fs.existsSync(dir)) {
-        return fileList;
-    }
-
-    const items = fs.readdirSync(dir, { withFileTypes: true });
-    const ignoredDirs = new Set(['plans']);
-
-    items.forEach((item) => {
-        const itemName = String(item && item.name || '');
-        if (!itemName) return;
-        const fullPath = path.join(dir, itemName);
-
-        if (item.isDirectory()) {
-            if (ignoredDirs.has(itemName)) {
-                return;
-            }
-            scanAllFilesRecursively(fullPath, baseDir, fileList);
-            return;
-        }
-
-        if (!item.isFile()) {
-            return;
-        }
-
-        const relativePath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
-        if (relativePath) {
-            fileList.push(relativePath);
-        }
-    });
-
-    return fileList;
-}
-
-function isIdeEditableRelativePath(relativePath) {
-    const normalized = String(relativePath || '').trim().replace(/\\/g, '/');
-    if (!normalized) return false;
-    if (/(^|\/)\.\.(\/|$)/.test(normalized)) return false;
-
-    const lower = normalized.toLowerCase();
-    if (lower.endsWith('.md')) return true;
-    if (lower.endsWith('.fx')) return true;
-    if (/^anims\/[^/]+(?:\.anim\.ts|\.cs)$/i.test(normalized)) return true;
-    if (/(?:^|\/)code\/[^/]+\.cs$/i.test(normalized)) return true;
-    if (/(?:^|\/)imgs\/[^/]+$/i.test(normalized)) return true;
-    if (/(?:^|\/)media\/[^/]+$/i.test(normalized)) return true;
-    return false;
-}
-
-function ideEditableKindFromRelativePath(relativePath) {
-    const normalized = String(relativePath || '').trim().replace(/\\/g, '/');
-    const lower = normalized.toLowerCase();
-    if (lower.endsWith('.md')) return 'markdown';
-    if (lower.endsWith('.fx')) return 'shaderfx';
-    if (lower.endsWith('.anim.ts')) return 'animts';
-    if (lower.endsWith('.cs')) return 'csharp';
-    if (/(?:^|\/)imgs\/[^/]+$/i.test(normalized)) return 'image';
-    if (/(?:^|\/)media\/[^/]+$/i.test(normalized)) return 'media';
-    return 'asset';
-}
-
-function generateIdeEditableIndex(options = {}) {
-    const contentRoot = String(options.contentRoot || projectConfig.docsDir || '').trim() || './site/content';
-    const outputPath = String(options.outputPath || IDE_EDITABLE_INDEX_PATH || '').trim() || IDE_EDITABLE_INDEX_PATH;
-    const nowIso = String(options.nowIso || '').trim() || new Date().toISOString();
-
-    if (!fs.existsSync(contentRoot)) {
-        console.warn(`跳过 ide-editable-index 生成：目录不存在 ${contentRoot}`);
-        return null;
-    }
-
-    const allFiles = scanAllFilesRecursively(contentRoot, contentRoot);
-    const filtered = allFiles
-        .filter((relativePath) => isIdeEditableRelativePath(relativePath))
-        .sort(stableStringCompare)
-        .map((relativePath) => ({
-            path: relativePath,
-            kind: ideEditableKindFromRelativePath(relativePath)
-        }));
-
-    const payload = {
-        schemaVersion: 1,
-        root: 'site/content',
-        generatedAt: nowIso,
-        files: filtered
-    };
-
-    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-    fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2));
-    console.log(`ide-editable-index 已生成：${outputPath}（${filtered.length} 个文件）`);
-    return payload;
 }
 
 function generateSitemap(config) {
@@ -2353,11 +2258,9 @@ function runStructure(deps = {}) {
     const runGenerateFunTestQuiz = deps.generateFunTestQuiz || generateFunTestQuiz;
     const runProcess = deps.processMainProject || processMainProject;
     const runSitemap = deps.generateSitemap || generateSitemap;
-    const runIdeEditableIndex = deps.generateIdeEditableIndex || generateIdeEditableIndex;
     runGenerateFunTestQuiz();
     const mainConfig = runProcess();
     runSitemap(mainConfig);
-    runIdeEditableIndex();
 }
 
 function runSearch(deps = {}) {
@@ -2378,14 +2281,12 @@ function runAll(deps = {}) {
     const runSearchIndex = deps.generateSearchIndex || generateSearchIndex;
     const runGuided = deps.generateGuidedSemanticIndex || generateGuidedSemanticIndex;
     const runBm25 = deps.generateBm25Index || generateBm25Index;
-    const runIdeEditableIndex = deps.generateIdeEditableIndex || generateIdeEditableIndex;
     runGenerateFunTestQuiz();
     const mainConfig = runProcess();
     runSitemap(mainConfig);
     runSearchIndex(mainConfig);
     runGuided(mainConfig);
     runBm25(mainConfig);
-    runIdeEditableIndex();
 }
 
 module.exports = {
@@ -2395,7 +2296,6 @@ module.exports = {
     generateGuidedSemanticIndex,
     generateBm25Index,
     generateFunTestQuiz,
-    generateIdeEditableIndex,
     parseFrontMatterAndBody,
     parseMetadata,
     extractDescriptionFromMarkdownBody,

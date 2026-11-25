@@ -3248,3 +3248,14 @@
 - `npm run check-generated`：失败（EXIT:1；`git diff --exit-code` 检出生成产物差异）
 
 **备注**：本次验证会重写 `fun-test/quiz-data.v1.json` 与 `tml-ide/*` 等生成物，已在验证后恢复；最终工作树仅保留 roadmap 范围内的教程、代码镜像与记录文件。
+
+### 验证记录 [2026-11-25 20:40]：移除网页 IDE / 后端，目录重整
+
+**级别**：L3
+
+**命令与结果**：
+- `npm test`：通过（135 用例 / 0 失败）
+- `npm run build`：通过（EXIT:0；160 篇文档，search/semantic/animts 产物已刷新）
+- `npm run check-generated`：提交后补跑，结果见下一条
+
+**备注**：删除 `tml-ide`、`tml-ide-app`、`site-app`、Cloudflare/Supabase 后端、animcs 旧链路、着色器画廊与 IDE 专属共享模块；`shader-hlsl-adapter`/`shader-editor-assist` 收敛到 `site/assets/js`，文章 `fx:` 预览保留；viewer 整体移除 studio 预览通道（约 25KB）；`tmp-playwright`→`tools/acceptance`、`after`/`local-skills`/`NVIM.md`→`.dev`、`site/tooling/scripts/knowledge`→`tools/indexer`。另修复 `viewer-sidebar-tree-contract.test.js` 用 `new URL().pathname` 导致中文路径百分号编码的既有失败（改为 `fileURLToPath`）。

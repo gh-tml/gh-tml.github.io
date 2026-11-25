@@ -11,7 +11,6 @@ test('viewer contains markdown callout runtime for > [!LEVEL] syntax', () => {
     assert.match(viewer, /\^\s*\\\[!\(\[A-Za-z\]\+\)\\\]/);
     assert.match(viewer, /stripMarkdownCalloutMarker/);
     assert.match(viewer, /applyMarkdownCalloutBlocks\(markdownContent\)/);
-    assert.match(viewer, /applyMarkdownCalloutBlocks\(dom\.output\)/);
     assert.match(viewer, /markerRemoved/);
     assert.match(viewer, /strippedLines\.join\('\\n'\)/);
 });
@@ -26,7 +25,6 @@ test('viewer contains KaTeX runtime and applies math rendering for markdown outp
     assert.match(viewer, /renderMarkdownMath/);
     assert.match(viewer, /renderMathInElement/);
     assert.match(viewer, /renderMarkdownMath\(markdownContent\)/);
-    assert.match(viewer, /renderMarkdownMath\(dom\.output\)/);
 });
 
 test('viewer renders quiz blocks before markdown math rendering for page content', () => {
@@ -71,7 +69,7 @@ test('viewer fx embed card includes inline realtime preview runtime hooks', () =
 test('viewer fx embed modal editor uses shader assist highlight and autocomplete hooks', () => {
     const viewer = fs.readFileSync(path.resolve('site/pages/viewer.html'), 'utf8');
 
-    assert.match(viewer, /\/tml-ide\/subapps\/assets\/js\/shader-editor-assist\.js/);
+    assert.match(viewer, /\/site\/assets\/js\/shader-editor-assist\.js/);
     assert.match(viewer, /fx-embed-editor-highlight/);
     assert.match(viewer, /fx-embed-editor-highlight-code/);
     assert.match(viewer, /fx-embed-autocomplete/);

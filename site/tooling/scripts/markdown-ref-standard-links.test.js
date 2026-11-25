@@ -91,28 +91,3 @@ test('viewer uses new standalone embed parser and callout transform hook', () =>
     assert.match(viewerHtml, /applyMarkdownCalloutBlocks\(markdownContent\)/);
     assert.match(viewerHtml, /installFxEmbedInteractions\(markdownContent\)/);
 });
-
-test('tml-ide markdown insertion snippets use protocol embeds', () => {
-    const source = fs.readFileSync(path.resolve('tml-ide-app/src/main.js'), 'utf8');
-
-    assert.match(source, /readMarkdownSelectionText\('动画说明'\)/);
-    assert.match(source, /readMarkdownSelectionText\('代码说明'\)/);
-    assert.match(source, /readMarkdownSelectionText\('Shader 说明'\)/);
-    assert.match(source, /anims:anims\/你的动画文件\.anim\.ts/);
-    assert.match(source, /cs:\.\/code\/demo\.cs#cs:t:命名空间\.类型名/);
-    assert.match(source, /fx:\.\/shaders\/demo\.fx/);
-    assert.match(source, /if \(key === 'math-inline'\)/);
-    assert.match(source, /if \(key === 'math-block'\)/);
-    assert.doesNotMatch(source, /insertMarkdownBlockSnippet\(`\{\{anim:/);
-    assert.doesNotMatch(source, /insertMarkdownBlockSnippet\(`\{\{cs:/);
-});
-
-test('legacy article studio insertion snippets also use protocol embeds', () => {
-    const source = fs.readFileSync(path.resolve('tml-ide/subapps/assets/js/article-studio.js'), 'utf8');
-
-    assert.match(source, /\(cs:\$\{pathPart\}#cs:/);
-    assert.match(source, /\[待补充说明\]\(anims:anims\/你的动画文件\.anim\.ts\)/);
-    assert.match(source, /if \(key === 'animts-block'\)/);
-    assert.doesNotMatch(source, /insertBlockSnippet\(`\{\{anim:/);
-    assert.doesNotMatch(source, /insertBlockSnippet\(`\{\{cs:/);
-});

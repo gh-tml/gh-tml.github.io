@@ -484,7 +484,6 @@
                     <ul class="nav-list">
                         <li class="nav-item"><a href="/site/index.html" class="nav-link">首页</a></li>
                         <li class="nav-item"><a href="/site/pages/folder.html" class="nav-link">文档</a></li>
-                        <li class="nav-item"><a href="/tml-ide/" class="nav-link">在线 IDE（Markdown/C#/HLSL）</a></li>
                         <li class="nav-item"><a href="/site/qa.html" class="nav-link">问答</a></li>
                         <li class="nav-item"><a href="https://github.com/DPapyru/DPapyru.github.io" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                         <li class="nav-item nav-accent">
@@ -1581,12 +1580,6 @@
                     action: 'community',
                     buttonClass: 'btn-outline'
                 },
-                {
-                    title: 'HLSL Shader Playground',
-                    description: '实时 HLSL 着色器编辑器，支持导出 tModLoader .fx 文件',
-                    action: 'shader-playground',
-                    buttonClass: 'btn-outline'
-                }
             ];
             
             // 生成快速链接卡片
@@ -1628,9 +1621,6 @@
                     case 'community':
                         buttonLink = 'https://github.com/DPapyru/DPapyru.github.io';
                         break;
-                    case 'shader-playground':
-                        buttonLink = '/tml-ide/';
-                        break;
                 }
                 
                 quickLinkCard.innerHTML = `
@@ -1642,8 +1632,7 @@
                        ${linkConfig.action === 'community' ? 'target="_blank" rel="noopener noreferrer"' : ''}>
                         ${linkConfig.action === 'view-all' ? '查看索引' :
                           linkConfig.action === 'get-started' ? '开始学习' :
-                          linkConfig.action === 'api-reference' ? '查看API' :
-                          linkConfig.action === 'shader-playground' ? '打开工具' : 'GitHub'}
+                          linkConfig.action === 'api-reference' ? '查看API' : 'GitHub'}
                     </a>
                 `;
                 

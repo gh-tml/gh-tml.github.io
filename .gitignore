@@ -34,8 +34,6 @@ test-*.html
 test-*.js
 *-test.html
 *-test.js
-!tml-ide-app/tests/
-!tml-ide-app/tests/**
 
 # 部署和构建文件
 dist/
@@ -71,6 +69,10 @@ pip-delete-this-directory.txt
 coverage/
 .nyc_output/
 
+# 依赖缓存与临时验收产物
+.npm-cache/
+tools/acceptance/artifacts/
+
 # 文档生成文件
 docs/_build/
 
@@ -85,14 +87,14 @@ GitHub错误10054故障排除指南.md
 
 docs/plans
 .worktrees/
+.agents/
 
 # 本地导出/临时预览文件
 .test/
 .kilocode/
 nul
-scripts/knowledge/tmodloader-api-indexer/obj
-scripts/knowledge/tmodloader-api-indexer/obj/
-scripts/knowledge/tmodloader-api-indexer/bin/
+tools/indexer/tmodloader-api-indexer/obj/
+tools/indexer/tmodloader-api-indexer/bin/
 
 # site/content 编译/预处理副产物
 **/bin/

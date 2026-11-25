@@ -53,11 +53,7 @@ function main() {
         { file: 'site/404.html', script: '/site/assets/js/accent-theme.js' },
         { file: 'site/content/index.html', script: '../assets/js/accent-theme.js' },
         { file: 'site/pages/viewer.html', script: '/site/assets/js/accent-theme.js' },
-        { file: 'site/pages/folder.html', script: '/site/assets/js/accent-theme.js' },
-        { file: 'site/pages/article-studio.html', script: '/site/assets/js/accent-theme.js' },
-        { file: 'site/pages/anim-renderer.html', script: '/site/assets/js/accent-theme.js' },
-        { file: 'site/pages/shader-playground.html', script: '/site/assets/js/accent-theme.js' },
-        { file: 'site/pages/shader-contribute.html', script: '/site/assets/js/accent-theme.js' }
+        { file: 'site/pages/folder.html', script: '/site/assets/js/accent-theme.js' }
     ];
 
     for (const entry of htmlFiles) {

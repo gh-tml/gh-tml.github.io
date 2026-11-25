@@ -5,7 +5,7 @@ date: 2026-02-07
 last_updated: 2026-03-08
 difficulty: beginner
 time: 15分钟
-description: Markdown 写作参考页：集中查询当前 viewer 与网页 IDE 支持的常用扩展语法。
+description: Markdown 写作参考页：集中查询当前 viewer 支持的常用扩展语法。
 topic: article-contribution
 order: 20
 ---
@@ -26,7 +26,7 @@ order: 20
 1. 协议链接通常要独占一行，嵌入效果才会触发。
 2. 当前常用协议前缀是 `cs:`、`anims:`、`fx:`。
 3. 旧版双花括号嵌入语法已移除。
-4. 提交前先在 IDE 里点一次 `预览` 或 `新标签预览`。
+4. 提交前先在本地用 viewer 打开确认效果。
 
 ## 普通文档链接
 

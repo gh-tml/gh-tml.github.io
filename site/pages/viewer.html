@@ -784,7 +784,6 @@
                     <ul class="nav-list">
                         <li class="nav-item"><a href="/site/index.html" class="nav-link">首页</a></li>
                         <li class="nav-item"><a href="/site/pages/folder.html" class="nav-link">文档</a></li>
-                        <li class="nav-item"><a href="/tml-ide/" class="nav-link">在线 IDE（Markdown/C#/HLSL）</a></li>
                         <li class="nav-item"><a href="/site/qa.html" class="nav-link">问答</a></li>
                         <li class="nav-item"><a href="https://github.com/DPapyru/DPapyru.github.io" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                         <li class="nav-item nav-accent">
@@ -1039,8 +1038,8 @@
 		    <script src="/site/assets/js/site-quiz.js"></script> <!-- Quiz 题目渲染 -->
                 <script src="/site/assets/js/prism.min.js"></script> <!-- 代码高亮库 -->
                 <script src="/site/assets/js/prism-csharp.min.js"></script> <!-- C#语言高亮支持 -->
-                <script src="/tml-ide/subapps/assets/js/shader-hlsl-adapter.js"></script> <!-- HLSL 适配器（与 IDE 一致） -->
-                <script src="/tml-ide/subapps/assets/js/shader-editor-assist.js"></script> <!-- Shader 编辑器高亮与补全 -->
+                <script src="/site/assets/js/shader-hlsl-adapter.js"></script> <!-- HLSL 适配器 -->
+                <script src="/site/assets/js/shader-editor-assist.js"></script> <!-- Shader 编辑器高亮与补全 -->
                 <script src="/site/assets/js/animts-runtime.js"></script> <!-- animts 动画运行时 -->
     <script>
         // Mermaid 兜底加载：如果本地资源缺失/加载失败，则尝试从 CDN 加载（不影响已有本地加载）
@@ -1090,505 +1089,6 @@
         let ALL_DOCS = [];
 	        let CURRENT_DOC_PATH = null;
 	        let DOC_LOOKUP_MAP = null;
-	        const STUDIO_PREVIEW_STORAGE_KEY = 'articleStudioViewerPreview.v1';
-	        let STUDIO_PREVIEW_MODE = false;
-	        let STUDIO_PREVIEW_RELOAD_TIMER = 0;
-	        let STUDIO_PREVIEW_LAST_IMAGE_NOTICE = '';
-	        let STUDIO_PREVIEW_LAST_IMAGE_NOTICE_AT = 0;
-            const STUDIO_PREVIEW_ANIM_BLOB_CACHE = new Map();
-
-	        function normalizeStudioPreviewPath(input) {
-	            let value = String(input || '').trim().replace(/\\/g, '/').replace(/^\/+/, '');
-	            value = value.replace(/^site\/content\//i, '').replace(/^content\//i, '').replace(/\/{2,}/g, '/');
-	            return value;
-	        }
-
-            function normalizeStudioPreviewAnimPath(input) {
-                const value = normalizeStudioPreviewPath(input || '');
-                if (!value) return '';
-                if (!/\.anim\.ts$/i.test(value)) return '';
-                if (/(^|\/)\.\.(\/|$)/.test(value)) return '';
-                return value;
-            }
-
-            function normalizeStudioPreviewShaderPath(input) {
-                const value = normalizeStudioPreviewPath(input || '').replace(/^\.\//, '');
-                if (!value) return '';
-                if (!/^anims\/shaders\//i.test(value) || !/\.fx$/i.test(value)) return '';
-                if (/(^|\/)\.\.(\/|$)/.test(value)) return '';
-                return value;
-            }
-
-            function normalizeStudioPreviewUploadedShaderFiles(rawList) {
-                if (!Array.isArray(rawList)) return [];
-                return rawList.map(function (item) {
-                    return {
-                        assetPath: normalizeStudioPreviewShaderPath(item && item.assetPath || ''),
-                        content: String(item && item.content || ''),
-                        name: String(item && item.name || '')
-                    };
-                }).filter(function (item) {
-                    return item.assetPath && item.content;
-                });
-            }
-
-            function normalizeStudioPreviewCompiledAnims(rawMap) {
-                const result = {};
-                if (!rawMap || typeof rawMap !== 'object') return result;
-
-                Object.keys(rawMap).forEach(function (rawPath) {
-                    const normalized = normalizeStudioPreviewAnimPath(rawPath);
-                    if (!normalized) return;
-
-                    const entry = rawMap[rawPath];
-                    const moduleJs = String(entry && entry.moduleJs || '');
-                    if (!moduleJs) return;
-
-                    result[normalized] = {
-                        moduleJs: moduleJs,
-                        profile: entry && typeof entry.profile === 'object' ? entry.profile : null,
-                        updatedAt: String(entry && entry.updatedAt || '')
-                    };
-                });
-                return result;
-            }
-
-            function normalizeStudioPreviewAnimCompileErrors(rawMap) {
-                const result = {};
-                if (!rawMap || typeof rawMap !== 'object') return result;
-
-                Object.keys(rawMap).forEach(function (rawPath) {
-                    const normalized = normalizeStudioPreviewAnimPath(rawPath);
-                    if (!normalized) return;
-
-                    const entry = rawMap[rawPath];
-                    const diagnostics = Array.isArray(entry && entry.diagnostics)
-                        ? entry.diagnostics.map(function (item) {
-                            return String(item || '').trim();
-                        }).filter(Boolean)
-                        : [];
-                    if (diagnostics.length === 0) return;
-
-                    result[normalized] = {
-                        diagnostics: diagnostics,
-                        updatedAt: String(entry && entry.updatedAt || '')
-                    };
-                });
-                return result;
-            }
-
-            function normalizeStudioPreviewAnimBridge(rawBridge) {
-                if (!rawBridge || typeof rawBridge !== 'object') return null;
-                const endpoint = String(rawBridge.endpoint || '').trim();
-                const connected = !!rawBridge.connected;
-                if (!endpoint && !connected) return null;
-                return {
-                    endpoint: endpoint,
-                    connected: connected
-                };
-            }
-
-	        function readStudioPreviewPayloadFromStorage() {
-	            try {
-	                const raw = window.localStorage.getItem(STUDIO_PREVIEW_STORAGE_KEY);
-	                if (!raw) return null;
-	                const parsed = JSON.parse(raw);
-	                if (!parsed || typeof parsed !== 'object') return null;
-	                const targetPath = normalizeStudioPreviewPath(parsed.targetPath || '');
-	                if (!targetPath) return null;
-	                const uploadedImages = Array.isArray(parsed.uploadedImages)
-                    ? parsed.uploadedImages.map(function (item) {
-                        return {
-                            assetPath: normalizeStudioPreviewPath(item && item.assetPath || ''),
-                            dataUrl: String(item && item.dataUrl || ''),
-                            name: String(item && item.name || '')
-                        };
-                    }).filter(function (item) {
-                        return item.assetPath && item.dataUrl;
-                    })
-                    : [];
-                const uploadedMedia = Array.isArray(parsed.uploadedMedia)
-                    ? parsed.uploadedMedia.map(function (item) {
-                        return {
-                            assetPath: normalizeStudioPreviewPath(item && item.assetPath || ''),
-                            dataUrl: String(item && item.dataUrl || ''),
-                            name: String(item && item.name || ''),
-                            type: String(item && item.type || '')
-                        };
-                    }).filter(function (item) {
-                        return item.assetPath && item.dataUrl;
-                    })
-                    : [];
-                const uploadedFxFiles = Array.isArray(parsed.uploadedFxFiles)
-                    ? parsed.uploadedFxFiles.map(function (item) {
-                        return {
-                            assetPath: normalizeStudioPreviewPath(item && item.assetPath || ''),
-                            content: String(item && item.content || ''),
-                            name: String(item && item.name || '')
-                        };
-                    }).filter(function (item) {
-                        return item.assetPath;
-                    })
-                    : [];
-	                const uploadedCsharpFiles = Array.isArray(parsed.uploadedCsharpFiles)
-	                    ? parsed.uploadedCsharpFiles.map(function (item) {
-	                        return {
-	                            assetPath: normalizeStudioPreviewPath(item && item.assetPath || ''),
-                            content: String(item && item.content || ''),
-	                            name: String(item && item.name || '')
-	                        };
-	                    }).filter(function (item) {
-	                        return item.assetPath && item.content;
-	                    })
-	                    : [];
-                    const uploadedShaderFiles = normalizeStudioPreviewUploadedShaderFiles(parsed.uploadedShaderFiles);
-	                    const compiledAnims = normalizeStudioPreviewCompiledAnims(parsed.compiledAnims);
-	                    const animCompileErrors = normalizeStudioPreviewAnimCompileErrors(parsed.animCompileErrors);
-	                    const animBridge = normalizeStudioPreviewAnimBridge(parsed.animBridge);
-	                return {
-	                    targetPath: targetPath,
-	                    markdown: String(parsed.markdown || ''),
-	                    uploadedImages: uploadedImages,
-	                    uploadedMedia: uploadedMedia,
-                        uploadedFxFiles: uploadedFxFiles,
-	                    uploadedCsharpFiles: uploadedCsharpFiles,
-                        uploadedShaderFiles: uploadedShaderFiles,
-	                        compiledAnims: compiledAnims,
-	                        animCompileErrors: animCompileErrors,
-	                        animBridge: animBridge,
-	                    updatedAt: String(parsed.updatedAt || '')
-	                };
-	            } catch (_) {
-	                return null;
-	            }
-	        }
-
-	        function isStudioPreviewModeEnabled() {
-            try {
-                const url = new URL(window.location.href);
-                const flag = String(url.searchParams.get('studio_preview') || '').trim().toLowerCase();
-                return flag === '1' || flag === 'true' || flag === 'yes';
-            } catch (_) {
-                return false;
-            }
-        }
-
-	        function getStudioPreviewTargetPath() {
-	            if (!STUDIO_PREVIEW_MODE) return '';
-	            const payload = readStudioPreviewPayloadFromStorage();
-	            return payload && payload.targetPath ? normalizeStudioPreviewPath(payload.targetPath) : '';
-	        }
-
-	        function notifyStudioPreviewImageMapped(assetPath) {
-	            if (!STUDIO_PREVIEW_MODE) return;
-	
-	            const normalized = normalizeStudioPreviewPath(assetPath || '');
-	            if (!normalized) return;
-	
-	            const now = Date.now();
-	            if (
-	                STUDIO_PREVIEW_LAST_IMAGE_NOTICE === normalized &&
-	                now - STUDIO_PREVIEW_LAST_IMAGE_NOTICE_AT < 1500
-	            ) {
-	                return;
-	            }
-	
-	            STUDIO_PREVIEW_LAST_IMAGE_NOTICE = normalized;
-	            STUDIO_PREVIEW_LAST_IMAGE_NOTICE_AT = now;
-	
-	            try {
-	                if (window.parent && window.parent !== window) {
-	                    window.parent.postMessage({
-	                        type: 'article-studio-preview-image-mapped',
-	                        payload: {
-	                            assetPath: normalized
-	                        }
-	                    }, window.location.origin);
-	                }
-	            } catch (_) {
-	                // ignore postMessage errors
-	            }
-	        }
-
-	        function resolveStudioPreviewImageDataUrl(rawPath) {
-	            if (!STUDIO_PREVIEW_MODE) return '';
-
-	            const payload = readStudioPreviewPayloadFromStorage();
-	            if (!payload || !Array.isArray(payload.uploadedImages) || payload.uploadedImages.length === 0) {
-	                return '';
-	            }
-
-	            let normalized = String(rawPath || '').trim();
-	            if (!normalized) return '';
-
-	            normalized = normalized.split('#')[0].split('?')[0];
-	            try {
-	                normalized = decodeURIComponent(normalized);
-	            } catch (_) {
-	                normalized = normalized;
-	            }
-	            normalized = normalized.replace(/^https?:\/\/[^/]+/i, '');
-	            normalized = normalized.replace(/^\/site\/content\//i, '');
-	            normalized = normalized.replace(/^site\/content\//i, '');
-	            normalized = normalized.replace(/^content\//i, '');
-	            normalized = normalizeStudioPreviewPath(normalized);
-
-	            if (!normalized) return '';
-
-	            const item = payload.uploadedImages.find(function (image) {
-	                return normalizeStudioPreviewPath(image && image.assetPath || '') === normalized;
-	            });
-	
-	            if (item && item.dataUrl) {
-	                notifyStudioPreviewImageMapped(item.assetPath || normalized);
-	                return String(item.dataUrl);
-	            }
-	
-	            return '';
-	        }
-
-            function resolveStudioPreviewMediaDataUrl(rawPath) {
-                if (!STUDIO_PREVIEW_MODE) return '';
-
-                const payload = readStudioPreviewPayloadFromStorage();
-                if (!payload || !Array.isArray(payload.uploadedMedia) || payload.uploadedMedia.length === 0) {
-                    return '';
-                }
-
-                let normalized = String(rawPath || '').trim();
-                if (!normalized) return '';
-
-                normalized = normalized.split('#')[0].split('?')[0];
-                try {
-                    normalized = decodeURIComponent(normalized);
-                } catch (_) {
-                    normalized = normalized;
-                }
-                normalized = normalized.replace(/^https?:\/\/[^/]+/i, '');
-                normalized = normalized.replace(/^\/site\/content\//i, '');
-                normalized = normalized.replace(/^site\/content\//i, '');
-                normalized = normalized.replace(/^content\//i, '');
-                normalized = normalizeStudioPreviewPath(normalized);
-
-                if (!normalized) return '';
-
-                const item = payload.uploadedMedia.find(function (media) {
-                    return normalizeStudioPreviewPath(media && media.assetPath || '') === normalized;
-                });
-
-                if (item && item.dataUrl) {
-                    return String(item.dataUrl);
-                }
-
-                return '';
-            }
-
-	        function installStudioPreviewFetchBridge() {
-		            if (!STUDIO_PREVIEW_MODE) return;
-		            if (window.__STUDIO_PREVIEW_FETCH_PATCHED) return;
-
-	            const nativeFetch = window.fetch.bind(window);
-	            window.fetch = function (input, init) {
-	                try {
-	                    let requestUrl = null;
-	                    if (typeof input === 'string') {
-	                        requestUrl = new URL(input, window.location.origin);
-	                    } else if (input && typeof input.url === 'string') {
-	                        requestUrl = new URL(input.url, window.location.origin);
-	                    }
-
-	                    if (requestUrl && requestUrl.pathname.startsWith('/site/content/')) {
-	                        let requestPath = requestUrl.pathname.replace(/^\/site\/content\//, '');
-	                        try {
-	                            requestPath = decodeURIComponent(requestPath);
-	                        } catch (_) {
-	                            requestPath = requestPath;
-	                        }
-	                        requestPath = normalizeStudioPreviewPath(requestPath);
-	
-	                        const payload = readStudioPreviewPayloadFromStorage();
-	                        if (payload) {
-	                            if (payload.targetPath === requestPath) {
-	                                return Promise.resolve(new Response(payload.markdown || '', {
-	                                    status: 200,
-	                                    headers: {
-	                                        'content-type': 'text/markdown; charset=utf-8'
-	                                    }
-	                                }));
-	                            }
-
-                            const imageMatch = (payload.uploadedImages || []).find(function (item) {
-                                return normalizeStudioPreviewPath(item.assetPath || '') === requestPath;
-                            });
-                            if (imageMatch && imageMatch.dataUrl) {
-                                return nativeFetch(imageMatch.dataUrl, init);
-                            }
-
-                            const mediaMatch = (payload.uploadedMedia || []).find(function (item) {
-                                return normalizeStudioPreviewPath(item.assetPath || '') === requestPath;
-                            });
-                            if (mediaMatch && mediaMatch.dataUrl) {
-                                return nativeFetch(mediaMatch.dataUrl, init);
-                            }
-
-                            const csharpMatch = (payload.uploadedCsharpFiles || []).find(function (item) {
-                                return normalizeStudioPreviewPath(item.assetPath || '') === requestPath;
-                            });
-                            if (csharpMatch && csharpMatch.content) {
-                                return Promise.resolve(new Response(csharpMatch.content, {
-                                    status: 200,
-                                    headers: {
-                                        'content-type': 'text/x-csharp; charset=utf-8'
-                                    }
-                                }));
-                            }
-
-                            const fxMatch = (payload.uploadedFxFiles || []).find(function (item) {
-                                return normalizeStudioPreviewPath(item.assetPath || '') === requestPath;
-                            });
-                            if (fxMatch && typeof fxMatch.content === 'string') {
-                                return Promise.resolve(new Response(fxMatch.content, {
-                                    status: 200,
-                                    headers: {
-                                        'content-type': 'text/x-hlsl; charset=utf-8'
-                                    }
-                                }));
-                            }
-	                        }
-	                    }
-	                } catch (_) {
-	                    // ignore and fallback
-	                }
-
-	                return nativeFetch(input, init);
-	            };
-
-		            window.__STUDIO_PREVIEW_FETCH_PATCHED = true;
-	        }
-
-            function installStudioPreviewMessageBridge() {
-                if (!STUDIO_PREVIEW_MODE) return;
-                if (window.__STUDIO_PREVIEW_MESSAGE_PATCHED) return;
-
-                window.addEventListener('message', function (event) {
-                    if (!event || event.origin !== window.location.origin) return;
-                    const data = event.data;
-                    if (!data || data.type !== 'article-studio-preview-update') return;
-
-                    try {
-                        window.localStorage.setItem(STUDIO_PREVIEW_STORAGE_KEY, JSON.stringify(data.payload || {}));
-                    } catch (_) {
-                        // ignore preview payload persistence errors
-                    }
-
-                    const payload = readStudioPreviewPayloadFromStorage();
-                    if (!payload || !payload.targetPath) return;
-                    scheduleStudioPreviewReload(payload.targetPath);
-                });
-
-                window.__STUDIO_PREVIEW_MESSAGE_PATCHED = true;
-            }
-
-	        function scheduleStudioPreviewReload(path) {
-	            if (!STUDIO_PREVIEW_MODE) return;
-	            const targetPath = normalizeStudioPreviewPath(path || CURRENT_DOC_PATH || '');
-	            if (!targetPath) return;
-
-	            if (STUDIO_PREVIEW_RELOAD_TIMER) {
-	                clearTimeout(STUDIO_PREVIEW_RELOAD_TIMER);
-	            }
-
-	            STUDIO_PREVIEW_RELOAD_TIMER = window.setTimeout(function () {
-	                STUDIO_PREVIEW_RELOAD_TIMER = 0;
-	                try {
-	                    const currentPath = normalizeStudioPreviewPath(CURRENT_DOC_PATH || '');
-	                    if (currentPath && currentPath === targetPath && typeof rerenderCurrentDocPreserveScroll === 'function') {
-	                        rerenderCurrentDocPreserveScroll();
-	                        return;
-	                    }
-
-	                    loadMarkdownDirectly(targetPath);
-	                } catch (err) {
-	                    console.warn('studio preview reload failed:', err);
-	                }
-	            }, 80);
-	        }
-
-            function resolveStudioPreviewAnimModuleUrl(normalizedPath, compiledEntry) {
-                if (!compiledEntry || !compiledEntry.moduleJs) return '';
-                if (typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
-                    return '';
-                }
-
-                const stamp = `${String(compiledEntry.updatedAt || '')}:${String(compiledEntry.moduleJs || '').length}`;
-                const cached = STUDIO_PREVIEW_ANIM_BLOB_CACHE.get(normalizedPath);
-                if (cached && cached.stamp === stamp && cached.url) {
-                    return cached.url;
-                }
-
-                if (cached && cached.url && typeof URL.revokeObjectURL === 'function') {
-                    try {
-                        URL.revokeObjectURL(cached.url);
-                    } catch (_) {
-                        // ignore revoke errors
-                    }
-                }
-
-                const blob = new Blob([compiledEntry.moduleJs], { type: 'text/javascript' });
-                const moduleUrl = URL.createObjectURL(blob);
-                STUDIO_PREVIEW_ANIM_BLOB_CACHE.set(normalizedPath, { stamp: stamp, url: moduleUrl });
-                return moduleUrl;
-            }
-
-            function createStudioPreviewAnimResolver() {
-                return function resolveStudioPreviewAnimEntry(request) {
-                    if (!STUDIO_PREVIEW_MODE) return null;
-                    const payload = readStudioPreviewPayloadFromStorage();
-                    if (!payload) return null;
-
-                    const normalized = normalizeStudioPreviewAnimPath(
-                        request && (request.normalized || request.rawSource) ? (request.normalized || request.rawSource) : ''
-                    );
-                    if (!normalized) return null;
-
-                    const compileError = payload.animCompileErrors && payload.animCompileErrors[normalized];
-                    if (compileError && Array.isArray(compileError.diagnostics) && compileError.diagnostics.length > 0) {
-                        return {
-                            diagnostics: compileError.diagnostics,
-                            blockFallback: true
-                        };
-                    }
-
-                    const compiled = payload.compiledAnims && payload.compiledAnims[normalized];
-                    if (!compiled || !compiled.moduleJs) return null;
-
-                    const moduleUrl = resolveStudioPreviewAnimModuleUrl(normalized, compiled);
-                    if (!moduleUrl) {
-                        return {
-                            diagnostics: ['compiled moduleJs 解析失败'],
-                            blockFallback: true
-                        };
-                    }
-
-                    return {
-                        moduleUrl: moduleUrl,
-                        profile: compiled.profile || null,
-                        blockFallback: true
-                    };
-                };
-            }
-
-            function installStudioPreviewAnimResolver(container) {
-                if (!STUDIO_PREVIEW_MODE) return;
-                const resolver = createStudioPreviewAnimResolver();
-                window.__ANIMTS_RESOLVE_ENTRY = resolver;
-
-                const scope = container && container.querySelectorAll ? container : document;
-                if (!scope || typeof scope.querySelectorAll !== 'function') return;
-                scope.querySelectorAll('.animts-embed[data-animts-src]').forEach(function (embed) {
-                    embed.__ANIMTS_RESOLVE_ENTRY = resolver;
-                });
-            }
 
             const FX_EMBED_SESSION = new Map();
             const FX_EMBED_IMAGE_CACHE = new Map();
@@ -1637,7 +1137,7 @@
 
             function loadFxEmbedAdapter() {
                 if (FX_EMBED_ADAPTER_PROMISE) return FX_EMBED_ADAPTER_PROMISE;
-                FX_EMBED_ADAPTER_PROMISE = import('/tml-ide-app/src/lib/shader-hlsl-adapter.js').then((module) => {
+                FX_EMBED_ADAPTER_PROMISE = import('/site/assets/js/shader-hlsl-adapter.js').then((module) => {
                     if (module && typeof module.buildFragmentSource === 'function') {
                         return module.buildFragmentSource;
                     }
@@ -1909,8 +1409,7 @@
                     ? resolveUsing(runtime.path, usingPath)
                     : '';
                 if (!resolvedPath) return null;
-                const previewDataUrl = resolveStudioPreviewImageDataUrl(resolvedPath);
-                const src = previewDataUrl || `/site/content/${encodeContentPath(resolvedPath)}`;
+                const src = `/site/content/${encodeContentPath(resolvedPath)}`;
                 const img = ensureFxEmbedImage(`card:${runtime.path}:${slot}:${resolvedPath}:${src}`, src);
                 if (!img || !img.complete || !img.naturalWidth || !img.naturalHeight) return null;
                 return img;
@@ -2662,8 +2161,7 @@
                     ? resolveUsing(FX_EMBED_MODAL.path, usingPath)
                     : '';
                 if (!resolvedPath) return null;
-                const previewDataUrl = resolveStudioPreviewImageDataUrl(resolvedPath);
-                const src = previewDataUrl || `/site/content/${encodeContentPath(resolvedPath)}`;
+                const src = `/site/content/${encodeContentPath(resolvedPath)}`;
                 const img = ensureFxEmbedImage(`using:${slot}:${resolvedPath}:${src}`, src);
                 if (!img || !img.complete || !img.naturalWidth || !img.naturalHeight) return null;
                 return img;
@@ -4033,9 +3531,6 @@
             // 初始化侧边栏滚动功能
 	            initializeSidebarScrolling();
 
-            STUDIO_PREVIEW_MODE = isStudioPreviewModeEnabled();
-            installStudioPreviewFetchBridge();
-            installStudioPreviewMessageBridge();
 
             // 初始化文档配置
             Promise.all([initializeDocumentConfig()]).then(() => {
@@ -4045,13 +3540,7 @@
                 // 从URL参数获取要加载的Markdown文件
                 const urlParams = new URLSearchParams(window.location.search);
                 let markdownFile = urlParams.get('file');
-                const studioTargetPath = getStudioPreviewTargetPath();
-                if (studioTargetPath) {
-                    markdownFile = studioTargetPath;
-                    console.log('studio_preview 模式：优先使用草稿目标路径:', markdownFile);
-                } else {
                     console.log('从URL参数获取的文件名:', markdownFile);
-                }
 
                 // 如果没有指定文件，尝试从路径中获取
                 if (!markdownFile) {
@@ -4176,14 +3665,12 @@
 	                            const resolvedSrcNoQuery = String(safe.src || '').split('#')[0].split('?')[0];
 	                            const isVideo = /\.(mp4|webm)$/i.test(rawHrefNoQuery) || /\.(mp4|webm)$/i.test(resolvedSrcNoQuery);
 	                            if (isVideo) {
-	                                const previewMediaDataUrl = resolveStudioPreviewMediaDataUrl(safe.src);
-	                                const safeVideoSrc = escapeHtml(previewMediaDataUrl || safe.src);
+	                                const safeVideoSrc = escapeHtml(safe.src);
 	                                const safeTitle = safe.title ? ` title="${escapeHtml(safe.title)}"` : '';
 	                                const mimeType = /\.webm$/i.test(rawHrefNoQuery) || /\.webm$/i.test(resolvedSrcNoQuery) ? 'video/webm' : 'video/mp4';
 	                                return `<video controls preload="metadata" playsinline${safeTitle}><source src="${safeVideoSrc}" type="${mimeType}" />您的浏览器不支持视频播放。</video>`;
 	                            }
-	                            const previewDataUrl = resolveStudioPreviewImageDataUrl(safe.src);
-	                            const safeSrc = escapeHtml(previewDataUrl || safe.src);
+	                            const safeSrc = escapeHtml(safe.src);
 	                            const safeAlt = escapeHtml(safe.alt || '');
 	                            const safeTitle = safe.title ? ` title="${escapeHtml(safe.title)}"` : '';
 	                            return `<img src="${safeSrc}" alt="${safeAlt}"${safeTitle} loading="lazy" decoding="async" />`;
@@ -6382,15 +5869,10 @@
 	                let fetchPath = filePath;
 	                console.log(`site/pages/viewer.html: 初始fetchPath: ${fetchPath}`);
 
-	                                const studioPreviewTargetPath = getStudioPreviewTargetPath();
-                let allowStudioPreviewUnindexed = false;
 
 // 1. URL解码
 	                fetchPath = decodeURIComponent(fetchPath);
 	                console.log(`site/pages/viewer.html: URL解码后: ${fetchPath}`);
-                if (studioPreviewTargetPath && normalizeStudioPreviewPath(fetchPath) === studioPreviewTargetPath) {
-                    allowStudioPreviewUnindexed = true;
-                }
 
 	                // 1.1 基础安全校验：拒绝路径穿越/反斜杠/空字节
 	                if (/(^|\/|\\)\.\.(\/|\\|$)/.test(fetchPath) || fetchPath.includes('\\') || fetchPath.includes('\0')) {
@@ -6513,20 +5995,12 @@
 	                    fetchPath = doc.path || doc.filename;
 	                    console.log(`site/pages/viewer.html: 找到匹配文档: ${fetchPath}`);
 	                } else {
-                    if (allowStudioPreviewUnindexed && studioPreviewTargetPath) {
-                        fetchPath = studioPreviewTargetPath;
-                        console.log(`site/pages/viewer.html: 使用 studio 草稿路径: ${fetchPath}`);
-                    } else {
-                        if (!defaultDocPath) throw new Error('未找到可用文档');
-                        fetchPath = defaultDocPath;
-                        console.log(`site/pages/viewer.html: 未找到匹配文档，使用默认: ${fetchPath}`);
-                    }
+                    if (!defaultDocPath) throw new Error('未找到可用文档');
+                    fetchPath = defaultDocPath;
+                    console.log(`site/pages/viewer.html: 未找到匹配文档，使用默认: ${fetchPath}`);
                 }
             }
 
-            if (!allowStudioPreviewUnindexed && studioPreviewTargetPath) {
-                allowStudioPreviewUnindexed = normalizeStudioPreviewPath(fetchPath) === studioPreviewTargetPath;
-            }
 
             // 6. 最终白名单校验：必须存在于 ALL_DOCS 中
 	            if (ALL_DOCS && ALL_DOCS.length > 0) {
@@ -6534,12 +6008,7 @@
                 if (matches.length === 1) {
                     fetchPath = matches[0].path || matches[0].filename;
                 } else if (matches.length === 0) {
-                    if (allowStudioPreviewUnindexed && studioPreviewTargetPath) {
-                        fetchPath = studioPreviewTargetPath;
-                        console.log(`site/pages/viewer.html: 白名单豁免（studio 草稿）: ${fetchPath}`);
-                    } else {
-                        throw new Error('文档不存在或未被索引（请使用 site/content/config.json 中的路径）');
-                    }
+                    throw new Error('文档不存在或未被索引（请使用 site/content/config.json 中的路径）');
                 } else {
                     throw new Error('文档名称不唯一，请使用完整路径');
                 }
@@ -6636,7 +6105,6 @@
 		                        const renderedHTML = marked.parse(content);
 		                        console.log('Markdown渲染完成，HTML长度:', renderedHTML.length);
 		                        markdownContent.innerHTML = renderedHTML;
-                                installStudioPreviewAnimResolver(markdownContent);
                                 installFxEmbedInteractions(markdownContent);
                                 applyMarkdownCalloutBlocks(markdownContent);
 

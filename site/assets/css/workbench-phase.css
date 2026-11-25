@@ -37,13 +37,7 @@
 .ui-workbench-page .search-shell,
 .ui-workbench-page .search-sidebar,
 .ui-workbench-page .search-workbench,
-.ui-workbench-page .shaderpg-shell,
-.ui-workbench-page .shader-gallery-shell,
-.ui-workbench-page .shader-contribute-shell,
-.ui-workbench-page .studio-lazy-workspace,
-.ui-workbench-page .studio-shell,
-.ui-workbench-page .animts-embed,
-.ui-workbench-page .animcs-embed {
+.ui-workbench-page .animts-embed {
     border: 1px solid var(--border-color);
     border-radius: 10px;
     box-shadow: none;
@@ -146,21 +140,11 @@
 }
 
 .ui-workbench-page .workbench-pane,
-.ui-workbench-page .workbench-composer,
-.ui-workbench-page .shaderpg-panel,
-.ui-workbench-page .shader-contribute-card,
-.ui-workbench-page .shader-gallery-contribute {
+.ui-workbench-page .workbench-composer {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background: var(--bg-content);
     box-shadow: none;
-}
-
-.ui-workbench-page .shaderpg-main,
-.ui-workbench-page .shaderpg-bottom,
-.ui-workbench-page .shader-contribute-grid,
-.ui-workbench-page .shader-gallery-grid {
-    gap: var(--workbench-gap);
 }
 
 .ui-workbench-status {
