@@ -3259,3 +3259,14 @@
 - `npm run check-generated`：提交后补跑，结果见下一条
 
 **备注**：删除 `tml-ide`、`tml-ide-app`、`site-app`、Cloudflare/Supabase 后端、animcs 旧链路、着色器画廊与 IDE 专属共享模块；`shader-hlsl-adapter`/`shader-editor-assist` 收敛到 `site/assets/js`，文章 `fx:` 预览保留；viewer 整体移除 studio 预览通道（约 25KB）；`tmp-playwright`→`tools/acceptance`、`after`/`local-skills`/`NVIM.md`→`.dev`、`site/tooling/scripts/knowledge`→`tools/indexer`。另修复 `viewer-sidebar-tree-contract.test.js` 用 `new URL().pathname` 导致中文路径百分号编码的既有失败（改为 `fileURLToPath`）。
+
+### 验证记录 [2026-11-25 20:46]：目录重整后的 L3 复跑
+
+**级别**：L3
+
+**命令与结果**：
+- `npm test`：通过（135 用例 / 0 失败）
+- `npm run build`：通过（EXIT:0）
+- `npm run check-generated`：失败（EXIT:1，仅 `git diff --exit-code` 检出生成物）
+
+**备注**：差异只有 4 个文件——`fun-test/quiz-data.v1.json`、`site/assets/semantic/{bm25,guided}-index.v1.json` 的 `generatedAt` 时间戳，以及 `site/sitemap.xml` 的 `lastmod`（取 `git log -1 --format=%cs`，提交后会漂到当天）。这三类字段由生成逻辑写入当前时间，属**既有不可复现问题**（见本文件历史记录），与本次改动无关；本次按现状提交生成物，不再扩大范围去改生成逻辑。
