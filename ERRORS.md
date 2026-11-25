@@ -3288,3 +3288,14 @@
 - 浏览器实测：`5-Intermediate-modding-with-C#6 …`（11888 字符）、`6-Intermediate-modding-with-C#7 …`（14444 字符）均正常渲染，无错误态
 
 **备注**：删除 `site-app`、animcs 旧链路（C# 工具 + JS 运行时 + 8 个测试 + 35MB `.NET` WASM 运行时 + 平铺旧产物）、着色器画廊残留与 `sharp/gifuct-js/vite` 依赖；修复文件名含 `#` 的文档取数被 URL 片段截断（改用 `encodeContentPath` 逐段编码）；顺手修 `main` 上已红的两处测试（`viewer-sidebar-tree-contract` 中文路径、`viewer-callout-runtime` 的两条陈旧断言）。构建前后 `config.json`/`search-index`/`sitemap` 无差异。
+
+### 验证记录 [2026-11-25 22:05]：修复 generate-index 的时区依赖（CI 红）
+
+**级别**：L3
+
+**命令与结果**：
+- `npm test`：通过（150 用例 / 0 失败）
+- `npm run generate-index`：通过；连续两次执行结果稳定
+- 复现：在 PR merge ref 上以 Node 18 / Node 24 执行均无差异，差异只在 CI（TZ=UTC）
+
+**备注**：CI 报 ` M site/content/config.json`。诊断后定位为 `normalizeDateValue` 对 `date: 2026-1-17` 这类非补零日期调用 `new Date()`，按其本地时区解析，再取 UTC 日期：本地（+08）得到 `2026-01-16`，CI（UTC）得到 `2026-01-17`，两边生成物不一致。改为先按字面量 `YYYY-M-D` 取年月日并补零，时区不再参与；影响 16 处 `date`/`last_updated` 值（朝字面量对齐）。
