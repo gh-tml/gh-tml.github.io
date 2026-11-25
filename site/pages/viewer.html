@@ -5401,8 +5401,8 @@
 	            if (!key) throw new Error('空的文档路径');
 
             if (!TRANSCLUSION_CACHE.has(key)) {
-                const fetchUrl = `/site/content/${key.replace(/^\.?\//, '').replace(/^site\/content\//, '').replace(/^content\//, '')}`;
-	                const p = fetch(encodeURI(fetchUrl), { cache: 'no-store' }).then(async response => {
+                const fetchUrl = '/site/content/' + encodeContentPath(key.replace(/^\.?\//, '').replace(/^site\/content\//, '').replace(/^content\//, ''));
+	                const p = fetch(fetchUrl, { cache: 'no-store' }).then(async response => {
 	                    if (!response.ok) {
 	                        throw new Error(`HTTP ${response.status} ${response.statusText}`);
 	                    }
@@ -6262,7 +6262,7 @@
                     return `\n\n> 无法载入代码：非法路径 \`${m.target}\`\n\n`;
                 }
 
-                const fetchUrl = `/site/content/${normalized.replace(/^\/+/, '')}`;
+                const fetchUrl = '/site/content/' + encodeContentPath(normalized);
                 let selector = null;
                 if (hash && hash.startsWith('#')) {
                     let decoded = hash;
@@ -6275,7 +6275,7 @@
                 }
 
                 try {
-                    const resp = await fetch(encodeURI(fetchUrl), { cache: 'no-store' });
+                    const resp = await fetch(fetchUrl, { cache: 'no-store' });
                     if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
                     const sourceText = await resp.text();
 
@@ -6556,12 +6556,12 @@
 		            }
 		
 		            // 使用 site/content 作为文档根目录
-		            const fetchUrl = `/site/content/${fetchPath.replace(/^\/+/, '')}`;
+		            const fetchUrl = '/site/content/' + encodeContentPath(fetchPath);
 
             console.log(`site/pages/viewer.html: 实际fetch URL: ${fetchUrl}`);
             console.log(`完整请求URL将是: ${window.location.origin}${fetchUrl}`);
 
-	            fetch(encodeURI(fetchUrl), { cache: 'no-store' })
+	            fetch(fetchUrl, { cache: 'no-store' })
 	                .then(response => {
                     console.log(`获取响应状态: ${response.status} ${response.statusText}`);
                     if (!response.ok) {
@@ -7076,7 +7076,7 @@
 	                const item = createSourceCodeDetailsItem(normalizedPath);
 	                list.appendChild(item.details);
 
-	                const fetchUrl = `/site/content/${normalizedPath.replace(/^\/+/, '')}`;
+	                const fetchUrl = '/site/content/' + encodeContentPath(normalizedPath);
 	                item.openEl.setAttribute('href', fetchUrl);
 
 	                item.copyBtn.addEventListener('click', async function () {
@@ -7098,7 +7098,7 @@
 	                });
 
 	                try {
-	                    const resp = await fetch(encodeURI(fetchUrl), { cache: 'no-store' });
+	                    const resp = await fetch(fetchUrl, { cache: 'no-store' });
 	                    if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
 	                    const sourceText = await resp.text();
 	                    item.codeEl.textContent = sourceText;

@@ -3277,3 +3277,14 @@
 - 站点内 GitHub 链接、giscus/qna 仓库配置、qna 生成脚本与 CI 工作流、Issue 模板、README 徽章统一改为 `gh-tml/gh-tml.github.io`。
 - `site/assets/qna-index.json` 属生成文件，已按新仓库名同步字符串，待 CI 用新 owner/repo 重跑覆盖；`ERRORS.md` 中的历史记录保持原样不追改。
 
+
+### 验证记录 [2026-11-25 21:45]：revert 后残留清理（PR 分支 chore/post-revert-cleanup）
+
+**级别**：L3
+
+**命令与结果**：
+- `npm test`：通过（150 用例 / 0 失败）
+- `npm run build`：通过（EXIT:0）
+- 浏览器实测：`5-Intermediate-modding-with-C#6 …`（11888 字符）、`6-Intermediate-modding-with-C#7 …`（14444 字符）均正常渲染，无错误态
+
+**备注**：删除 `site-app`、animcs 旧链路（C# 工具 + JS 运行时 + 8 个测试 + 35MB `.NET` WASM 运行时 + 平铺旧产物）、着色器画廊残留与 `sharp/gifuct-js/vite` 依赖；修复文件名含 `#` 的文档取数被 URL 片段截断（改用 `encodeContentPath` 逐段编码）；顺手修 `main` 上已红的两处测试（`viewer-sidebar-tree-contract` 中文路径、`viewer-callout-runtime` 的两条陈旧断言）。构建前后 `config.json`/`search-index`/`sitemap` 无差异。

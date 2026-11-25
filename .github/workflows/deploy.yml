@@ -53,15 +53,6 @@ jobs:
             echo "No root package.json found, skipping root install"
           fi
 
-          if [ -f site-app/package-lock.json ]; then
-            echo "Installing site-app dependencies..."
-            npm --prefix site-app ci
-          elif [ -f site-app/package.json ]; then
-            echo "No site-app package-lock.json found, falling back to npm install"
-            npm --prefix site-app install
-          else
-            echo "No site-app/package.json found, skipping site-app install"
-          fi
           
       - name: Build generated assets (if needed)
         run: |
@@ -97,7 +88,6 @@ jobs:
             --exclude '.github/' \
             --exclude '.worktrees/' \
             --exclude 'node_modules/' \
-            --exclude 'site-app/node_modules/' \
             --exclude '.pnpm-store/' \
             --exclude 'tmp-playwright/' \
             --exclude 'test-results/' \
