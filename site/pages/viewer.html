@@ -1137,14 +1137,12 @@
 
             function loadFxEmbedAdapter() {
                 if (FX_EMBED_ADAPTER_PROMISE) return FX_EMBED_ADAPTER_PROMISE;
-                FX_EMBED_ADAPTER_PROMISE = import('/site/assets/js/shader-hlsl-adapter.js').then((module) => {
-                    if (module && typeof module.buildFragmentSource === 'function') {
-                        return module.buildFragmentSource;
+                FX_EMBED_ADAPTER_PROMISE = Promise.resolve().then(() => {
+                    const adapter = typeof window !== 'undefined' ? window.ShaderHlslAdapter : null;
+                    if (!adapter || typeof adapter.buildFragmentSource !== 'function') {
+                        throw new Error('buildFragmentSource 不可用');
                     }
-                    if (module && module.default && typeof module.default.buildFragmentSource === 'function') {
-                        return module.default.buildFragmentSource;
-                    }
-                    throw new Error('buildFragmentSource 不可用');
+                    return adapter.buildFragmentSource;
                 });
                 return FX_EMBED_ADAPTER_PROMISE;
             }

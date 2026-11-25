@@ -3270,3 +3270,12 @@
 - `npm run check-generated`：失败（EXIT:1，仅 `git diff --exit-code` 检出生成物）
 
 **备注**：差异只有 4 个文件——`fun-test/quiz-data.v1.json`、`site/assets/semantic/{bm25,guided}-index.v1.json` 的 `generatedAt` 时间戳，以及 `site/sitemap.xml` 的 `lastmod`（取 `git log -1 --format=%cs`，提交后会漂到当天）。这三类字段由生成逻辑写入当前时间，属**既有不可复现问题**（见本文件历史记录），与本次改动无关；本次按现状提交生成物，不再扩大范围去改生成逻辑。
+
+### 验证记录 [2026-11-25 21:05]：站内自持后的人工冒烟
+
+**命令与结果**：
+- `npm test`：通过（135 用例 / 0 失败）
+- `npm run build`：通过（EXIT:0）
+- 冒烟（本地 127.0.0.1:8123 静态服务）：`/site/`、`folder.html`、`viewer.html?file=…`、`search-results.html?q=animts`（13 条结果）均正常，页面无“加载失败”
+
+**备注**：`fx:` 卡片恢复为直接使用脚本标签加载的全局适配器（此前动态 `import` 指向 UMD 文件取不到导出，会报 `buildFragmentSource 不可用`），实测卡片显示“实时预览中”且 WebGL2 上下文正常。动画画布在无头/后台窗口下因 `document.hidden=true`、`requestAnimationFrame` 不触发而画面为空，属环境限制，非代码回归。
