@@ -3263,3 +3263,17 @@
 - `node --test` 既有失败：`viewer-callout-runtime`（callout / KaTeX 断言不匹配）、`viewer-sidebar-tree-contract`（工作树路径含中文导致 URL 编码后 ENOENT）。改动前基线由未改动的主工作树（b7ccb04）用同一命令采集，同样失败，非本次引入。
 - 环境说明：`~/.npm` 与 `/tmp` 只读，npm 缓存改到项目内 `.worktrees/.npm-cache`；验证日志在 `.worktrees/logs/`。
 
+
+### 验证记录 [2026-11-25 19:40]：顶部导航补 Shader 入口 + GitHub 链接切到 gh-tml
+
+**级别**：非 L3（仅页面导航与链接文案，未动构建产物）
+
+**命令与结果**：
+- `npm run build`：通过（EXIT:0；需先 `npm --prefix site-app ci` 安装 site-app 依赖）
+- `node --test`：未新增失败（仍为既有 6 条：viewer-callout-runtime 两条断言、viewer-sidebar-tree-contract 四条中文路径 ENOENT）
+
+**备注**：
+- 浏览器实测 9 个页面导航均为「首页 / 文档 / Shader / 问答 / GitHub」，Shader 指向 `/site/pages/shader-playground.html`，Shader 页自身标为当前项。
+- 站点内 GitHub 链接、giscus/qna 仓库配置、qna 生成脚本与 CI 工作流、Issue 模板、README 徽章统一改为 `gh-tml/gh-tml.github.io`。
+- `site/assets/qna-index.json` 属生成文件，已按新仓库名同步字符串，待 CI 用新 owner/repo 重跑覆盖；`ERRORS.md` 中的历史记录保持原样不追改。
+

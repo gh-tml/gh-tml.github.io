@@ -1,9 +1,9 @@
 # 泰拉瑞亚 Mod 制作教程（协作站点）
 
-[![GitHub license](https://img.shields.io/github/license/DPapyru/DPapyru.github.io)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/DPapyru/DPapyru.github.io)](https://github.com/DPapyru/DPapyru.github.io/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/DPapyru/DPapyru.github.io)](https://github.com/DPapyru/DPapyru.github.io/network)
-[![GitHub issues](https://img.shields.io/github/issues/DPapyru/DPapyru.github.io)](https://github.com/DPapyru/DPapyru.github.io/issues)
+[![GitHub license](https://img.shields.io/github/license/gh-tml/gh-tml.github.io)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/gh-tml/gh-tml.github.io)](https://github.com/gh-tml/gh-tml.github.io/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/gh-tml/gh-tml.github.io)](https://github.com/gh-tml/gh-tml.github.io/network)
+[![GitHub issues](https://img.shields.io/github/issues/gh-tml/gh-tml.github.io)](https://github.com/gh-tml/gh-tml.github.io/issues)
 
 这是一个面向泰拉瑞亚 / tModLoader Mod 开发者的教程站点：给新人一个“能照着做”的学习路径，也欢迎大家一起补充内容。
 
@@ -62,8 +62,8 @@
 
 ## 反馈与交流
 
-- GitHub Issues：`https://github.com/DPapyru/DPapyru.github.io/issues`
-- GitHub Discussions：`https://github.com/DPapyru/DPapyru.github.io/discussions`
+- GitHub Issues：`https://github.com/gh-tml/gh-tml.github.io/issues`
+- GitHub Discussions：`https://github.com/gh-tml/gh-tml.github.io/discussions`
 - QQ 群：`960277607`
 
 ## 许可证

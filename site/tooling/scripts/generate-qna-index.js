@@ -128,8 +128,8 @@ async function getDiscussions(token, owner, repo, categoryId, maxCount) {
 
 async function main() {
     const args = parseArgs(process.argv.slice(2));
-    const owner = args.owner || 'DPapyru';
-    const repo = args.repo || 'DPapyru.github.io';
+    const owner = args.owner || 'gh-tml';
+    const repo = args.repo || 'gh-tml.github.io';
     const category = args.category || 'Q&A';
     const output = args.output || path.join('site', 'assets', 'qna-index.json');
     const limit = args.limit ? parseInt(args.limit, 10) : 200;

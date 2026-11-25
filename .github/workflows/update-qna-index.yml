@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          node scripts/generate-qna-index.js --owner DPapyru --repo DPapyru.github.io --category "Q&A" --output assets/qna-index.json --limit 200
+          node scripts/generate-qna-index.js --owner gh-tml --repo gh-tml.github.io --category "Q&A" --output assets/qna-index.json --limit 200
 
       - name: Commit changes (if any)
         run: |

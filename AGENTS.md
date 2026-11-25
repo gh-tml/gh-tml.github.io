@@ -13,7 +13,7 @@
 - 需要改动文件时，必须使用工作树进行开发。
 - 单次任务完成后删除对应工作树。
 
-推荐目录：`/mnt/f/DPapyru.github.io/.worktrees/<worktree-name>`。
+推荐目录：仓库内 `.worktrees/<worktree-name>`（已被 `.gitignore` 覆盖）。
 
 推荐命名：`feat-<topic>`、`fix-<topic>`、`content-<topic>`。
 

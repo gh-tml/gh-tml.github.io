@@ -4,7 +4,7 @@
 
     const GISCUS_ORIGIN = 'https://giscus.app';
     const GISCUS_OPTIONS = {
-        repo: 'DPapyru/DPapyru.github.io',
+        repo: 'gh-tml/gh-tml.github.io',
         repoId: 'R_kgDOQczhug',
         mapping: 'specific',
         theme: 'dark_dimmed',
