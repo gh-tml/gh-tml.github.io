@@ -924,7 +924,7 @@
         }
         if (typeof module !== 'undefined' && module.exports) {
             try {
-                return require('../../../tml-ide/subapps/assets/js/shader-hlsl-adapter.js');
+                return require('../../../site/assets/js/shader-hlsl-adapter.js');
             } catch (_error) {
                 return null;
             }

@@ -7,14 +7,6 @@ function readSource(relPath) {
     return fs.readFileSync(path.resolve(relPath), 'utf8');
 }
 
-test('tml-ide animts local preview compile keeps profile metadata in success payload', () => {
-    const source = readSource('tml-ide-app/src/main.js');
-
-    assert.match(source, /function\s+parseAnimProfileForPreview\s*\(/);
-    assert.match(source, /const\s+profile\s*=\s*parseAnimProfileForPreview\(source\)/);
-    assert.match(source, /return\s*\{\s*[\s\S]*?ok:\s*true[\s\S]*?profile\s*\}/);
-});
-
 test('anim renderer selected-file preview registers local module before mount', () => {
     const source = readSource('site/pages/anim-renderer.html');
 

@@ -49,11 +49,3 @@ test('shared file ops use suffix allowlist and keep legacy conversion', () => {
     assert.match(fileOps, /extraFiles/);
     assert.match(fileOps, /resolveRequestFiles/);
 });
-
-test('tml-ide unified submit sends files[] payload from scm changes', () => {
-    const source = read('tml-ide-app/src/main.js');
-
-    assert.match(source, /function\s+runUnifiedSubmitBatches\s*\(/);
-    assert.match(source, /payload\s*=\s*\{\s*prTitle,\s*files:/);
-    assert.match(source, /listScmChanges\(\)/);
-});

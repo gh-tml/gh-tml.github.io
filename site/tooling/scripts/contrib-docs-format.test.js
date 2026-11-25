@@ -4,8 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const TARGET_FILES = [
-    path.resolve('site/content/如何贡献/使用网页特殊动画模块.md'),
-    path.resolve('site/content/如何贡献/在线写作IDE使用教程.md')
+    path.resolve('site/content/如何贡献/使用网页特殊动画模块.md')
 ];
 
 function hasBrokenNestedAnimcsFence(text) {

@@ -2,8 +2,8 @@
     "version": 1,
     "generatedAt": "2026-01-30T04:42:52.984Z",
     "source": {
-        "owner": "DPapyru",
-        "repo": "DPapyru.github.io",
+        "owner": "gh-tml",
+        "repo": "gh-tml.github.io",
         "category": {
             "name": "Q&A",
             "id": "DIC_kwDOQczhus4C1Eic",
@@ -15,7 +15,7 @@
         {
             "number": 6,
             "title": "猪",
-            "url": "https://github.com/DPapyru/DPapyru.github.io/discussions/6",
+            "url": "https://github.com/gh-tml/gh-tml.github.io/discussions/6",
             "createdAt": "2026-01-18T02:18:08Z",
             "updatedAt": "2026-01-18T02:18:08Z",
             "answerChosenAt": null,

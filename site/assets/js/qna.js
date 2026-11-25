@@ -5,7 +5,7 @@
     const QNA_INDEX_URL = '/site/assets/qna-index.json';
     const GISCUS_ORIGIN = 'https://giscus.app';
     const GISCUS_OPTIONS = {
-        repo: 'DPapyru/DPapyru.github.io',
+        repo: 'gh-tml/gh-tml.github.io',
         repoId: 'R_kgDOQczhug',
         mapping: 'number',
         theme: 'dark_dimmed',
@@ -204,7 +204,7 @@
             titleEl.textContent = '请选择一个问题';
             subtitleEl.textContent = '';
             openEl.style.display = 'none';
-            openEl.href = 'https://github.com/DPapyru/DPapyru.github.io/discussions';
+            openEl.href = 'https://github.com/gh-tml/gh-tml.github.io/discussions';
             return;
         }
 
@@ -216,7 +216,7 @@
         if (item.answerChosenAt) parts.push('已解决');
         subtitleEl.textContent = parts.join(' · ');
 
-        openEl.href = item.url || 'https://github.com/DPapyru/DPapyru.github.io/discussions';
+        openEl.href = item.url || 'https://github.com/gh-tml/gh-tml.github.io/discussions';
         openEl.style.display = 'inline-flex';
     }
 
